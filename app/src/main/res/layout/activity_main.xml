@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/whiteish"
     tools:context="com.app.dizdarious.quickmath.MainActivity">
 
     <LinearLayout
@@ -26,31 +27,55 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
+                android:background="@drawable/my_button"
+                android:fontFamily="@font/antic_slab"
                 android:onClick="otherActivity"
-                android:text="Addition (+)" />
+                android:text="Addition (+)"
+                android:textColor="@android:color/white"
+                android:textSize="30sp"
+                android:textAllCaps="false"
+                />
 
             <Button
                 android:id="@+id/subtraction"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
+                android:background="@drawable/my_button"
+                android:fontFamily="@font/antic_slab"
                 android:onClick="otherActivity"
-                android:text="Subtraction (-)" />
+                android:text="Subtraction (-)"
+                android:textColor="@android:color/white"
+                android:textSize="30sp"
+                android:textAllCaps="false"
+                />
 
             <Button
                 android:id="@+id/multiplication"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
+                android:background="@drawable/my_button"
+                android:fontFamily="@font/antic_slab"
                 android:onClick="otherActivity"
-                android:text="Multiplication (*)" />
+                android:text="Multiplication (*)"
+                android:textColor="@android:color/white"
+                android:textSize="30sp"
+                android:textAllCaps="false"
+                />
 
             <Button
                 android:id="@+id/division"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@drawable/my_button"
+                android:fontFamily="@font/antic_slab"
                 android:onClick="otherActivity"
-                android:text="Division (/)" />
+                android:text="Division (/)"
+                android:textColor="@android:color/white"
+                android:textSize="30sp"
+                android:textAllCaps="false"
+                />
         </LinearLayout>
     </LinearLayout>
 

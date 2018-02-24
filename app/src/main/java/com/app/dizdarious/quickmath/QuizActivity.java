@@ -3,15 +3,29 @@ package com.app.dizdarious.quickmath;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Handler;
+import android.support.annotation.DrawableRes;
+import android.support.annotation.LayoutRes;
+import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+import android.widget.ViewFlipper;
 
 import org.w3c.dom.Text;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -27,6 +41,13 @@ public class QuizActivity extends AppCompatActivity {
     TextView levelView;
     TextView lastResult;
 
+    MediaPlayer player1;
+    MediaPlayer player2;
+    MediaPlayer player3;
+    MediaPlayer player4;
+    MediaPlayer player5;
+
+
     Button firstRandom;
     Button secondRandom;
     Button thirdRandom;
@@ -34,6 +55,12 @@ public class QuizActivity extends AppCompatActivity {
     int mathLevel = 0;
     int range = 10;
     int levelCap = 20;
+
+    ArrayList <Boolean> fiveInRow;
+
+
+    ConstraintLayout fatherLayout;
+
 
 
     Addition addition;
@@ -47,33 +74,51 @@ public class QuizActivity extends AppCompatActivity {
 
 
 
+        fiveInRow = new ArrayList<>(4);
+
 
 
 
         Intent intent = getIntent();
         String decision = intent.getStringExtra(MainActivity.EXTRA_MESSAGE);
+        fatherLayout = findViewById(R.id.father);
 
         levelView = findViewById(R.id.levelView);
-
         levelView.setText(String.valueOf(ofLevel()));
+
+
 
         firstNumber = findViewById(R.id.first_number);
         operator = findViewById(R.id.operator);
         secondNumber = findViewById(R.id.second_number);
         result = findViewById(R.id.result);
+
         firstRandom = findViewById(R.id.first_random);
         secondRandom = findViewById(R.id.second_random);
         thirdRandom = findViewById(R.id.third_random);
+
         lastResult = findViewById(R.id.last_result);
 
-        firstRandom.setBackgroundColor(Color.WHITE);
-        secondRandom.setBackgroundColor(Color.WHITE);
-        thirdRandom.setBackgroundColor(Color.WHITE);
+        firstRandom.setBackgroundResource(R.drawable.my_button);
+        secondRandom.setBackgroundResource(R.drawable.my_button);
+        thirdRandom.setBackgroundResource(R.drawable.my_button);
 
+
+            initializeSounds();
 
         if (decision.equals("addition")) {
-                    operator.setText("+");
+            fatherLayout.setBackgroundResource(R.drawable.blueish);
+            operator.setText("+");
                     randomizeAddition();
+        }
+        else if (decision.equals("subtraction")){
+            fatherLayout.setBackgroundResource(R.drawable.greenish);
+        }
+        else if (decision.equals("multiplication")){
+            fatherLayout.setBackgroundResource(R.drawable.purplish);
+        }
+        else if (decision.equals("division")){
+            fatherLayout.setBackgroundResource(R.drawable.redish);
         }
 
     }
@@ -103,16 +148,6 @@ public class QuizActivity extends AppCompatActivity {
 
 
     public void randomizeAddition() {
-       // firstRandom.setBackgroundColor(Color.BLACK);
-       // firstRandom.setAlpha(0.7f);
-
-       // secondRandom.setBackgroundColor(Color.BLACK);
-        //secondRandom.setAlpha(0.7f);
-
-       // thirdRandom.setBackgroundColor(Color.BLACK);
-        //thirdRandom.setAlpha(0.7f);
-
-
         result.setText("X");
         addition = new Addition(range);
 
@@ -121,7 +156,6 @@ public class QuizActivity extends AppCompatActivity {
 
         firstNumber.setText(String.valueOf(addition.getFirstNumber()));
         secondNumber.setText(String.valueOf(addition.getSecondNumber()));
-        // result.setText(String.valueOf (addition.getResult()));
 
         if (number == 1) {
             firstRandom.setText(String.valueOf(addition.getRandomResultOne()));
@@ -158,14 +192,16 @@ public class QuizActivity extends AppCompatActivity {
 
                 if (Integer.valueOf((String) firstRandom.getText()) == addition.getResult()) {
                     result.setText(String.valueOf(firstRandom.getText()));
-                    lastResult.setText("Last result: " + first + " " + operator + " " +second + " " +equals + " " + lastResultLocal);
                     mathLevel++;
+                    //reachedFive();
+
                     levelUpdates();
                     levelView.setText(String.valueOf(ofLevel()));
                     colorChangerCorrect(firstRandom);
+
                 }
                 else {
-                    colorChangerMistake(firstRandom);
+                    colorChangerIncorrect(firstRandom);
                 }
 
                 break;
@@ -173,28 +209,29 @@ public class QuizActivity extends AppCompatActivity {
             case R.id.second_random:
                 if (Integer.valueOf((String) secondRandom.getText()) == addition.getResult()) {
                     result.setText(secondRandom.getText());
-                    lastResult.setText("Last result: " + first + " " + operator + " " +second + " " +equals + " " + lastResultLocal);
                     mathLevel++;
+                    //reachedFive();
                     levelUpdates();
                     levelView.setText(String.valueOf(ofLevel()));
                     colorChangerCorrect(secondRandom);
                 }
                 else {
-                    colorChangerMistake(secondRandom);
+                    colorChangerIncorrect(secondRandom);
                 }
                 break;
 
             case R.id.third_random:
                 if (Integer.valueOf((String) thirdRandom.getText()) == addition.getResult()) {
                     result.setText(thirdRandom.getText());
-                    lastResult.setText("Last result: " + first + " " + operator + " " +second + " " +equals + " " + lastResultLocal);
                     mathLevel++;
+                    //reachedFive();
                     levelUpdates();
                     levelView.setText(String.valueOf(ofLevel()));
                     colorChangerCorrect(thirdRandom);
                 }
                 else {
-                    colorChangerMistake(thirdRandom);
+                    colorChangerIncorrect(thirdRandom);
+
                 }
                 break;
         }
@@ -202,58 +239,127 @@ public class QuizActivity extends AppCompatActivity {
 
     }
 
+    public void reachedFive(){
+        if (fiveInRow.get(4).equals(true)){
+            this.fiveInRow = new ArrayList<>(4);
+        }
 
-    public void colorChangerMistake(final Button button_id){
-
-        button_id.setBackgroundColor(Color.RED);
-        new CountDownTimer(2000, 50) {
-
-            @Override
-            public void onTick(long arg0) {
-                // TODO Auto-generated method stub
-
-            }
-            @Override
-            public void onFinish() {
-                button_id.setBackgroundColor(Color.WHITE);
-            }
-        }.start();
     }
 
-    public void colorChangerCorrect(final Button button_id){
 
-        button_id.setBackgroundColor(Color.GREEN);
-        new CountDownTimer(2000, 50) {
+    public void playSpecificFile() {
+
+
+        if (fiveInRow.get(0)) {
+
+            player1.start();
+        }
+
+         if (fiveInRow.get(0) && !fiveInRow.get(1) ){
+
+            player2.start();
+        }
+
+          if (fiveInRow.get(1) && !fiveInRow.get(2) ){
+
+                player3.start();
+        }
+           if (fiveInRow.get(2) && !fiveInRow.get(3) ) {
+
+            player4.start();
+        }
+          if (fiveInRow.get(3)) {
+
+            player5.start();
+        }
+    }
+
+    public void initializeSounds()  {
+            try{
+            player1 = new MediaPlayer();
+            player1.setDataSource(QuizActivity.this,
+                    Uri.parse("android.resource://com.app.dizdarious.quickmath/" + R.raw.note1));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
+            try {
+            player2 = new MediaPlayer();
+            player2.setDataSource(QuizActivity.this,
+                    Uri.parse("android.resource://com.app.dizdarious.quickmath/" + R.raw.note2));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
+            try {
+            player3 = new MediaPlayer();
+            player3.setDataSource(QuizActivity.this,
+                    Uri.parse("android.resource://com.app.dizdarious.quickmath/" + R.raw.note3));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
+
+            try {
+            player4 = new MediaPlayer();
+            player4.setDataSource(QuizActivity.this,
+                    Uri.parse("android.resource://com.app.dizdarious.quickmath/" + R.raw.note4));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
+            try {
+                player5 = new MediaPlayer();
+                player5.setDataSource(QuizActivity.this,
+                        Uri.parse("android.resource://com.app.dizdarious.quickmath/" + R.raw.note5));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+    }
+
+
+    public void colorChangerCorrect(final Button button_id){
+        button_id.setBackgroundResource(R.drawable.correct_button);
+        fiveInRow.add(true);
+        //Toast t =  Toast.makeText(this,fiveInRow.toString(),Toast.LENGTH_SHORT);
+        //t.show();
+        new CountDownTimer(500, 50) {
 
             @Override
             public void onTick(long arg0) {
-                // TODO Auto-generated method stub
-
             }
             @Override
             public void onFinish() {
-                button_id.setBackgroundColor(Color.WHITE);
+                button_id.setBackgroundResource(R.drawable.my_button);
+
+                //playSpecificFile();
                 randomizeAddition();
             }
         }.start();
     }
+    public void colorChangerIncorrect(final Button button_id){
+        button_id.setBackgroundResource(R.drawable.incorrect_button);
+        fiveInRow = new ArrayList<>(4);
+        new CountDownTimer(2000, 50) {
 
-
-
-    void levelUp(){
-        mathLevel++;
+            @Override
+            public void onTick(long arg0) {
+            }
+            @Override
+            public void onFinish() {
+                button_id.setBackgroundResource(R.drawable.my_button);
+            }
+        }.start();
     }
 
-    int getLevel(){
-        return mathLevel;
-    }
 
-    void sleep(){
-        try {
-            TimeUnit.SECONDS.sleep(1);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
+
+
+
 
 }
