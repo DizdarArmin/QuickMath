@@ -4,8 +4,29 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/whiteish"
+    android:background="@android:color/white"
     tools:context="com.app.dizdarious.quickmath.MainActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="bottom"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:srcCompat="@drawable/kids" />
+        </LinearLayout>
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -17,7 +38,6 @@
             android:id="@+id/holder"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="50dp"
             android:layout_marginLeft="15dp"
             android:layout_marginRight="15dp"
             android:orientation="vertical">
@@ -27,55 +47,51 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
-                android:background="@drawable/my_button"
+                android:background="@color/darkerBlue"
                 android:fontFamily="@font/antic_slab"
                 android:onClick="otherActivity"
                 android:text="Addition (+)"
-                android:textColor="@android:color/white"
-                android:textSize="30sp"
                 android:textAllCaps="false"
-                />
+                android:textColor="@android:color/white"
+                android:textSize="30sp" />
 
             <Button
                 android:id="@+id/subtraction"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
-                android:background="@drawable/my_button"
+                android:background="@color/darkerPink"
                 android:fontFamily="@font/antic_slab"
                 android:onClick="otherActivity"
                 android:text="Subtraction (-)"
-                android:textColor="@android:color/white"
-                android:textSize="30sp"
                 android:textAllCaps="false"
-                />
+                android:textColor="@android:color/white"
+                android:textSize="30sp" />
 
             <Button
                 android:id="@+id/multiplication"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
-                android:background="@drawable/my_button"
+                android:background="@color/darkerPurple"
                 android:fontFamily="@font/antic_slab"
                 android:onClick="otherActivity"
                 android:text="Multiplication (*)"
-                android:textColor="@android:color/white"
-                android:textSize="30sp"
                 android:textAllCaps="false"
-                />
+                android:textColor="@android:color/white"
+                android:textSize="30sp" />
 
             <Button
                 android:id="@+id/division"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/my_button"
+                android:background="@color/darkerYellow"
                 android:fontFamily="@font/antic_slab"
                 android:onClick="otherActivity"
                 android:text="Division (/)"
-                android:textColor="@android:color/white"
-                android:textSize="30sp"
                 android:textAllCaps="false"
-                />
+                android:textColor="@android:color/white"
+                android:textSize="30sp" />
         </LinearLayout>
     </LinearLayout>
 

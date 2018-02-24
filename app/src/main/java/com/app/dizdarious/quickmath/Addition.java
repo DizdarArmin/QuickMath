@@ -24,22 +24,19 @@ public class Addition {
 
 
     Addition(int number){
-
             Random random = new Random();
             Random randomTwo = new Random();
+            Random randomTree = new Random();
+            Random randomFour = new Random();
             firstNumber = random.nextInt(number) + 1;
-            secondNumber = random.nextInt(number) + 1;
+            secondNumber = randomTwo.nextInt(number) + 1;
             operator = "+";
 
 
-         randomizerOne = random.nextInt(number + (number/3)) + 1;
-         randomizerTwo = randomTwo.nextInt(number - (number/2)) + 1;
-
         result = firstNumber + secondNumber;
 
-        randomResultOne = firstNumber + randomizerOne;
-        randomResultTwo = result - randomizerTwo;
-        //randomResultTree = (random.nextInt(firstNumber + secondNumber)) + randomizer;
+        randomResultOne = randomTree.nextInt(result + result/2) + 1;
+        randomResultTwo = randomFour.nextInt(result - result/2) + result/2;
 
 
 
@@ -63,9 +60,6 @@ public class Addition {
     }
     int getRandomResultTwo(){
         return randomResultTwo;
-    }
-    int getRandomResultTree(){
-        return randomResultTree;
     }
 
     public String getOperator() {
