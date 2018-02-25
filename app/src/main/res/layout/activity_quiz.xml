@@ -3,7 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/father"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/darkerBlue">
 
 
     <LinearLayout
@@ -30,7 +31,6 @@
                     android:layout_weight="1"
                     android:background="@color/darkestBlue"
                     android:clickable="true"
-                    android:onClick="setDecision"
                     android:orientation="vertical"
                     android:padding="5dp">
 
@@ -62,7 +62,6 @@
                     android:layout_weight="1"
                     android:background="@color/darkestPink"
                     android:clickable="true"
-                    android:onClick="setDecision"
                     android:orientation="vertical"
                     android:padding="5dp">
 
@@ -94,7 +93,6 @@
                     android:layout_weight="1"
                     android:background="@color/darkestPurple"
                     android:clickable="true"
-                    android:onClick="setDecision"
                     android:orientation="vertical"
                     android:padding="5dp">
 
@@ -125,7 +123,6 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:background="@color/darkestYellow"
-                    android:onClick="setDecision"
                     android:orientation="vertical"
                     android:padding="5dp">
 

@@ -24,8 +24,8 @@ public class Subtraction {
         Random randomTwo = new Random();
         Random randomTree = new Random();
         Random randomFour = new Random();
-        firstNumber = random.nextInt(number) + 1;
-        secondNumber = randomTwo.nextInt(firstNumber - 1 ) + 1;
+        firstNumber = random.nextInt(number);
+        secondNumber = randomTwo.nextInt(firstNumber - 1 );
         result = firstNumber - secondNumber;
 
         randomResultOne = randomTree.nextInt(result - 1) + 1;
