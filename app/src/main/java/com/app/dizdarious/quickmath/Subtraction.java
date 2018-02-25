@@ -26,12 +26,10 @@ public class Subtraction {
         Random randomFour = new Random();
         firstNumber = random.nextInt(number) + 1;
         secondNumber = randomTwo.nextInt(firstNumber - 1 ) + 1;
-        operator = " - ";
-
         result = firstNumber - secondNumber;
 
-        randomResultOne = randomTree.nextInt(result - result/2) + 1;
-        randomResultTwo = randomFour.nextInt(result + result/4) + result/2;
+        randomResultOne = randomTree.nextInt(result - 1) + 1;
+        randomResultTwo = randomFour.nextInt(result + 10) + 1;
 
 
 

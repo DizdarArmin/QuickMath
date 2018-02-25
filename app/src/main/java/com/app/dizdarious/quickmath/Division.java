@@ -14,20 +14,19 @@ public class Division {
     private int result;
     private int randomResultOne;
     private int randomResultTwo;
-    ArrayList<Integer> brojevi;
 
-    private String operator;
+
 
 
 
 
 
     Division(int number){
+        ArrayList<Integer> brojevi = new ArrayList<>();
         Random random = new Random();
         Random randomTwo = new Random();
         Random randomTree = new Random();
         Random randomFour = new Random();
-        brojevi = new ArrayList<>();
         firstNumber = random.nextInt(number) + 1;
         int i;
         for (i = 1; i <= firstNumber; i++) {
@@ -37,18 +36,14 @@ public class Division {
         }
 
 
-        numberHelper = randomTwo.nextInt(brojevi.size()) + 1;
-        secondNumber = brojevi.get(numberHelper-1);
+        numberHelper = randomTwo.nextInt(brojevi.size() + 1);
+        secondNumber = brojevi.get(numberHelper);
 
-
-        operator = " - ";
 
         result = firstNumber / secondNumber;
 
-        randomResultOne = randomTree.nextInt(result - result/2) + 1;
+        randomResultOne = randomTree.nextInt(result) + 1;
         randomResultTwo = randomFour.nextInt(result + result/2) + 1;
-
-
 
     }
 
@@ -70,10 +65,6 @@ public class Division {
     }
     int getRandomResultTwo(){
         return randomResultTwo;
-    }
-
-    public String getOperator() {
-        return operator;
     }
 
 }

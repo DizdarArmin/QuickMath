@@ -2,5 +2,7 @@
 <resources>
     <array name="preloaded_fonts" translatable="false">
         <item>@font/antic_slab</item>
+        <item>@font/faster_one</item>
+        <item>@font/monofett</item>
     </array>
 </resources>
