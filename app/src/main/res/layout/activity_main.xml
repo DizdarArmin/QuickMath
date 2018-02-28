@@ -10,6 +10,20 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:gravity="right"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:gravity="bottom"
         android:orientation="horizontal">
 
@@ -24,6 +38,7 @@
                 android:id="@+id/imageView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:visibility="invisible"
                 app:srcCompat="@drawable/kids" />
         </LinearLayout>
     </LinearLayout>
@@ -50,6 +65,7 @@
                 android:background="@color/darkerBlue"
                 android:fontFamily="@font/antic_slab"
                 android:onClick="otherActivity"
+                android:soundEffectsEnabled="false"
                 android:text="Addition (+)"
                 android:textAllCaps="false"
                 android:textColor="@android:color/white"
@@ -57,12 +73,16 @@
 
             <Button
                 android:id="@+id/subtraction"
+                style="@style/Widget.AppCompat.Button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
                 android:background="@color/darkerPink"
+                android:cursorVisible="false"
+                android:defaultFocusHighlightEnabled="true"
                 android:fontFamily="@font/antic_slab"
                 android:onClick="otherActivity"
+                android:soundEffectsEnabled="false"
                 android:text="Subtraction (-)"
                 android:textAllCaps="false"
                 android:textColor="@android:color/white"
@@ -76,6 +96,7 @@
                 android:background="@color/darkerPurple"
                 android:fontFamily="@font/antic_slab"
                 android:onClick="otherActivity"
+                android:soundEffectsEnabled="false"
                 android:text="Multiplication (*)"
                 android:textAllCaps="false"
                 android:textColor="@android:color/white"
@@ -85,13 +106,66 @@
                 android:id="@+id/division"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
                 android:background="@color/darkerYellow"
                 android:fontFamily="@font/antic_slab"
                 android:onClick="otherActivity"
+                android:soundEffectsEnabled="false"
                 android:text="Division (/)"
                 android:textAllCaps="false"
                 android:textColor="@android:color/white"
                 android:textSize="30sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/results"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/antic_slab"
+                        android:text="Result"
+                        android:textAllCaps="false"
+                        android:textColor="@android:color/white"
+                        android:textSize="24sp" />
+
+                    <Button
+                        android:id="@+id/reset"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@color/darkerLime"
+                        android:fontFamily="@font/antic_slab"
+                        android:onClick="reset"
+                        android:soundEffectsEnabled="false"
+                        android:text="Reset"
+                        android:textAllCaps="false"
+                        android:textColor="@android:color/white"
+                        android:textSize="24sp" />
+
+                    <ToggleButton
+                        android:id="@+id/sound_on_off"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/antic_slab"
+                        android:onClick="soundOnOff"
+                        android:text="ToggleButton"
+                        android:textAllCaps="false"
+                        android:textColor="@android:color/white"
+                        android:textSize="24sp" />
+                </LinearLayout>
+            </LinearLayout>
+
         </LinearLayout>
     </LinearLayout>
 

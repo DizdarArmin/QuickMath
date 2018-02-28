@@ -37,8 +37,8 @@ public class MathOperator {
     }
 
     public void subtraction (int number) {
-        firstNumber = random.nextInt(number) + 2;
-        secondNumber = random.nextInt(firstNumber - 1) + 1;
+        firstNumber = random.nextInt(number) + 1;
+        secondNumber = random.nextInt(firstNumber);
         operator = "-";
         result = firstNumber - secondNumber;
 
@@ -54,7 +54,7 @@ public class MathOperator {
         result = firstNumber * secondNumber;
 
         randomResultOne = random.nextInt(result + result) + 1;
-        randomResultTwo = random.nextInt(result - result/2) + 1;
+        randomResultTwo = random.nextInt(result - result/5) + 1;
     }
 
     public void division (int number){
@@ -77,8 +77,8 @@ public class MathOperator {
 
         result = firstNumber / secondNumber;
 
-        randomResultOne = random.nextInt(result) + 1;
-        randomResultTwo = random.nextInt(result + result) + 1;
+        randomResultOne = random.nextInt(result * 5) + 1;
+        randomResultTwo = random.nextInt(result * 4) + 1;
     }
 
 

@@ -31,6 +31,7 @@
                     android:layout_weight="1"
                     android:background="@color/darkestBlue"
                     android:clickable="true"
+                    android:onClick="setDecision"
                     android:orientation="vertical"
                     android:padding="5dp">
 
@@ -50,7 +51,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:fontFamily="@font/antic_slab"
-                        android:text="TextView"
+                        android:text="lvl 20"
                         android:textAlignment="center"
                         android:textSize="18sp" />
                 </LinearLayout>
@@ -62,6 +63,7 @@
                     android:layout_weight="1"
                     android:background="@color/darkestPink"
                     android:clickable="true"
+                    android:onClick="setDecision"
                     android:orientation="vertical"
                     android:padding="5dp">
 
@@ -93,6 +95,7 @@
                     android:layout_weight="1"
                     android:background="@color/darkestPurple"
                     android:clickable="true"
+                    android:onClick="setDecision"
                     android:orientation="vertical"
                     android:padding="5dp">
 
@@ -123,6 +126,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:background="@color/darkestYellow"
+                    android:onClick="setDecision"
                     android:orientation="vertical"
                     android:padding="5dp">
 
@@ -147,6 +151,13 @@
                         android:textSize="18sp" />
                 </LinearLayout>
             </LinearLayout>
+
+            <ProgressBar
+                android:id="@+id/progress_bar"
+                style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:progressDrawable="@drawable/progress_activity" />
 
         </LinearLayout>
     </LinearLayout>

@@ -1,7 +1,10 @@
 package com.app.dizdarious.quickmath;
 
+import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.graphics.drawable.ColorDrawable;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
@@ -9,10 +12,13 @@ import android.os.CountDownTimer;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import java.io.IOException;
@@ -29,7 +35,6 @@ public class QuizActivity extends AppCompatActivity {
     TextView secondNumber; // operator
     TextView result;
     TextView operator;
-    TextView lastResult;
 
     MediaPlayer player1;
     MediaPlayer player2;
@@ -37,6 +42,12 @@ public class QuizActivity extends AppCompatActivity {
     MediaPlayer player4;
     MediaPlayer player5;
     MediaPlayer player6;
+    MediaPlayer player7;
+    MediaPlayer player8;
+    MediaPlayer player9;
+
+    ProgressBar progressBar;
+
 
 
     Button firstRandom;
@@ -44,10 +55,18 @@ public class QuizActivity extends AppCompatActivity {
     Button thirdRandom;
 
 
-    int additionLevel = 10;
-    int subtractionLevel = 10;
-    int multiplicationLevel = 10;
-    int divisionLevel = 10;
+    int additionUp = 1;
+
+
+
+    int subtractionUp = 1;
+    int multiplicationUp = 1;
+    int divisionUp = 1;
+
+    int additionLevel;
+    int subtractionLevel;
+    int multiplicationLevel;
+    int divisionLevel;
 
 
     int additionRange = 10;
@@ -96,6 +115,8 @@ public class QuizActivity extends AppCompatActivity {
     static int darkerYellow;
     static int darkestYellow;
 
+    static int transparent;
+
     String decision;
 
 
@@ -116,27 +137,44 @@ public class QuizActivity extends AppCompatActivity {
 
     ConstraintLayout fatherLayout;
 
-
-
-    Addition addition;
-    Subtraction subtraction;
-    Multiplication multiplication;
-    Division division;
     MathOperator mathOperator;
+
+
+    boolean levelChanged;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_quiz);
+        player1 = new MediaPlayer();
+        player2 = new MediaPlayer();
+        player3 = new MediaPlayer();
+        player4 = new MediaPlayer();
+        player5 = new MediaPlayer();
+        player6 = new MediaPlayer();
+        player7 = new MediaPlayer();
+        player8 = new MediaPlayer();
+        player9 = new MediaPlayer();
+
+        initializeSounds();
+
+
+
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
 
+
+
         mathOperator = new MathOperator();
+
+        progressBar = findViewById(R.id.progress_bar);
 
         equation_holder = findViewById(R.id.equation_holder);
         number_holder = findViewById(R.id.number_holder);
         fatherLayout = findViewById(R.id.father);
         kids_holder= findViewById(R.id.kids_holder);
+
+        transparent = ResourcesCompat.getColor(getResources(), R.color.transparent, null);
 
         lightRed = ResourcesCompat.getColor(getResources(), R.color.lightRed, null);
         darkerRed = ResourcesCompat.getColor(getResources(), R.color.darkerRed, null);
@@ -161,6 +199,9 @@ public class QuizActivity extends AppCompatActivity {
         lightYellow = ResourcesCompat.getColor(getResources(), R.color.lightYellow, null);
         darkerYellow = ResourcesCompat.getColor(getResources(), R.color.darkerYellow, null);
         darkestYellow = ResourcesCompat.getColor(getResources(), R.color.darkestYellow, null);
+
+
+
 
 
         fiveInRow = new ArrayList<>(4);
@@ -193,54 +234,142 @@ public class QuizActivity extends AppCompatActivity {
         secondRandom = findViewById(R.id.second_random);
         thirdRandom = findViewById(R.id.third_random);
 
-        clickCount = 0;
+        clickCount = 1;
 
-        initializeSounds();
 
-        check();
 
 
             setTheme();
+            loadLevel();
+            levelUpdates();
+            levelProgressBarUpdate();
+            displayLevels();
 
-        displayLevels();
+
+        //additionLevel = 0;
+
+
 
     } // End of onCreate
 
     public void setTheme() {
-
+        levelUpdates();
         if (decision.equals("addition")) {
             colorThemeBlue();
             kids_holder.setImageResource(R.drawable.kid_one);
             operator.setText("+");
             mathOperator.addition(additionRange);
+
+            loadLevel();
+            levelUpdates();
+            levelProgressBarUpdate();
+
+
             additionView();
+            displayLevels();
             randomize();
+
         }
         else if (decision.equals("subtraction")){
             colorThemePink();
             kids_holder.setImageResource(R.drawable.kid_four);
             mathOperator.subtraction(subtractionRange);
-            randomize();
-            subtractionView();
             operator.setText("-");
+
+            loadLevel();
+            levelUpdates();
+            levelProgressBarUpdate();
+
+
+
+            subtractionView();
+            displayLevels();
+            randomize();
         }
         else if (decision.equals("multiplication")){
             colorThemePurple();
             kids_holder.setImageResource(R.drawable.kid_tree);
             mathOperator.multiplication(multiplicationRange);
             operator.setText("*");
-            randomize();
-            multiplicationView();
 
+            loadLevel();
+            levelUpdates();
+            levelProgressBarUpdate();
+
+
+            multiplicationView();
+            displayLevels();
+            randomize();
         }
         else if (decision.equals("division")){
             kids_holder.setImageResource(R.drawable.kid_two);
             colorThemeYellow();
-            operator.setText(" / ");
+            operator.setText("/");
             mathOperator.division(divisionRange);
-            randomize();
+
+
+            loadLevel();
+            levelUpdates();
+            levelProgressBarUpdate();
+
+
             divisionView();
+            displayLevels();
+            randomize();
         }
+
+
+
+    }
+
+    public void saveLevel(){
+
+        SharedPreferences.Editor editor = getSharedPreferences("LEVEL", MODE_PRIVATE).edit();
+        editor.putInt("addition", additionUp);
+        editor.putInt("addition_exp", additionLevel);
+        editor.putInt("addition_level_cap", additionLevelCap);
+
+        editor.putInt("subtraction", subtractionUp);
+        editor.putInt("subtraction_exp" , subtractionLevel);
+        editor.putInt("subtraction_level_cap", subtractionLevelCap);
+
+        editor.putInt("multiplication" , multiplicationUp);
+        editor.putInt("multiplication_exp", multiplicationLevel);
+        editor.putInt("multiplication_level_cap", multiplicationLevelCap);
+
+        editor.putInt("division" , divisionUp);
+        editor.putInt("division_exp", divisionLevel);
+        editor.putInt("division_level_cap", divisionLevelCap);
+        editor.commit();
+
+    }
+
+    public void loadLevel(){
+
+        SharedPreferences prefs = getSharedPreferences("LEVEL", MODE_PRIVATE);
+
+        additionUp = prefs.getInt("addition", -1);
+        additionLevel = prefs.getInt("addition_exp", -1);
+        additionLevelCap = prefs.getInt("addition_level_cap", -1);
+
+        subtractionUp = prefs.getInt("subtraction", -1);
+        subtractionLevel = prefs.getInt("subtraction_exp", -1);
+        subtractionLevelCap = prefs.getInt("subtraction_level_cap", -1);
+
+        multiplicationUp = prefs.getInt("multiplication", -1);
+        multiplicationLevel = prefs.getInt("multiplication_exp", -1);
+        multiplicationLevelCap = prefs.getInt("multiplication_level_cap", -1);
+
+        divisionUp = prefs.getInt("division", -1);
+        divisionLevel = prefs.getInt("division_exp", -1);
+        divisionLevelCap = prefs.getInt("division_level_cap", -1);
+
+    }
+
+
+
+    public void playFile(){
+        player1.start();
 
 
     }
@@ -253,261 +382,109 @@ public class QuizActivity extends AppCompatActivity {
     }
 
     public String additionToString(){
-            return additionLevel + " / " + additionLevelCap;
+            return  "LVL " + additionUp;
     }
     public String subtractionToString(){
-        return subtractionLevel + " / " + subtractionLevelCap;
+        return "LVL " + subtractionUp;
     }
     public String multiplicationToString(){
-            return multiplicationLevel + " / " + multiplicationLevelCap;
+            return "LVL " + multiplicationUp;
     }
     public String divisionToString(){
-        return divisionLevel + " / " + divisionLevelCap;
+        return "LVL " + divisionUp;
+    }
+
+    public void notifyUser (){
+       if (decision.equals("addition")){
+        levelUpNotify(levelUpMessage(additionUp, "addition"));
+           playFile();
+       }
+
+       else if (decision.equals("subtraction")){
+        levelUpNotify(levelUpMessage(subtractionUp, "subtraction"));
+
+       }
+       else if (decision.equals("multiplication")) {
+           levelUpNotify(levelUpMessage(multiplicationUp, "multiplication"));
+       }
+       else if (decision.equals("division")) {
+           levelUpNotify(levelUpMessage(divisionUp, "division"));
+       }
     }
 
     public void additionLevelUpdates(){
-        if (additionLevel == 100){
-            additionRange = 20;
-            additionLevelCap = 200;
-        }
+        if (additionLevel >= additionLevelCap){
+            additionLevel = 0;
 
-        else if (additionLevel == 200){
-            additionRange = 30;
-            additionLevelCap = 400;
-        }
-        else if (additionLevel == 400) {
-            additionRange = 40;
-            additionLevelCap = 800;
-        }
-        else if (additionLevel == 800){
-            additionRange = 50;
-            additionLevelCap = 1600;
-        }
-        else if (additionLevel == 1600) {
-            additionRange = 80;
-            additionLevelCap = 3200;
-        }
-        else if (additionLevel == 3200) {
-            additionRange = 160;
-            additionLevelCap = 6400;
-        }
-        else if (additionLevel == 6400) {
-            additionRange = 320;
-            additionLevelCap = 12800;
-        }
-        else if (additionLevel == 12800) {
-            additionRange = 640;
-            additionLevelCap = 25600;
-        }
-        else if (additionLevel == 25600) {
-            additionRange = 1280;
-            additionLevelCap = 51200;
+            additionUp++;
+            notifyUser();
+            additionLevelCap = additionLevelCap + additionLevelCap;
+            additionRange = additionRange + additionRange;
         }
     }
+    public void subtractionLevelUpdates() {
+        if (subtractionLevel >= subtractionLevelCap){
+            subtractionLevel = 0;
+            subtractionUp++;
+            notifyUser();
 
-    public void subtractionLevelUpdates(){
-        if (subtractionLevel == 100){
-            subtractionRange = 20;
-            subtractionLevelCap = 200;
+
+            subtractionLevelCap = subtractionLevelCap + subtractionLevelCap;
+            subtractionRange = subtractionRange  +  subtractionRange;
         }
 
-        else if (subtractionLevel == 200){
-            subtractionRange = 30;
-            subtractionLevelCap = 400;
-        }
-        else if (subtractionLevel == 400) {
-            subtractionRange = 40;
-            subtractionLevelCap = 800;
-        }
-        else if (subtractionLevel == 800){
-            subtractionRange = 50;
-            subtractionLevelCap = 1600;
-        }
-        else if (subtractionLevel == 1600) {
-            subtractionRange = 80;
-            subtractionLevelCap = 3200;
-        }
-        else if (subtractionLevel == 3200) {
-            subtractionRange = 160;
-            subtractionLevelCap = 6400;
-        }
-        else if (subtractionLevel == 6400) {
-            subtractionRange = 320;
-            subtractionLevelCap = 12800;
-        }
-        else if (subtractionLevel == 12800) {
-            subtractionRange = 640;
-            subtractionLevelCap = 25600;
-        }
-        else if (subtractionLevel == 25600) {
-            subtractionRange = 1280;
-            subtractionLevelCap = 51200;
-        }
     }
-
     public void multiplicationLevelUpdates(){
-        if (multiplicationLevel == 100){
-            multiplicationRange = 20;
-            multiplicationLevelCap = 200;
-        }
+        if (multiplicationLevel >= multiplicationLevelCap) {
+            multiplicationLevel = 0;
+            multiplicationUp++;
+            notifyUser();
 
-        else if (multiplicationLevel == 200){
-            multiplicationRange = 30;
-            multiplicationLevelCap = 400;
-        }
-        else if (multiplicationLevel == 400) {
-            multiplicationRange = 40;
-            multiplicationLevelCap = 800;
-        }
-        else if (multiplicationLevel == 800){
-            multiplicationRange = 50;
-            multiplicationLevelCap = 1600;
-        }
-        else if (multiplicationLevel == 1600) {
-            multiplicationRange = 80;
-            multiplicationLevelCap = 3200;
-        }
-        else if (multiplicationLevel == 3200) {
-            multiplicationRange = 160;
-            multiplicationLevelCap = 6400;
-        }
-        else if (multiplicationLevel == 6400) {
-            multiplicationRange = 320;
-            multiplicationLevelCap = 12800;
-        }
-        else if (multiplicationLevel == 12800) {
-            multiplicationRange = 640;
-            multiplicationLevelCap = 25600;
-        }
-        else if (multiplicationLevel == 25600) {
-            multiplicationRange = 1280;
-            multiplicationLevelCap = 51200;
+            multiplicationLevelCap = multiplicationLevelCap + multiplicationLevelCap;
+            multiplicationRange = multiplicationRange + multiplicationRange;
         }
     }
-
     public void divisionLevelUpdates(){
-        if (divisionLevel == 100){
-            divisionRange = 20;
-            divisionLevelCap = 200;
-        }
+       if (divisionLevel >= divisionLevelCap){
+           divisionLevel = 0;
+           divisionUp++;
+           notifyUser();
 
-        else if (divisionLevel == 200){
-            divisionRange = 30;
-            divisionLevelCap = 400;
-        }
-        else if (divisionLevel == 400) {
-            divisionRange = 40;
-            divisionLevelCap = 800;
-        }
-        else if (divisionLevel == 800){
-            divisionRange = 50;
-            divisionLevelCap = 1600;
-        }
-        else if (divisionLevel == 1600) {
-            divisionRange = 80;
-            divisionLevelCap = 3200;
-        }
-        else if (divisionLevel == 3200) {
-            divisionRange = 160;
-            divisionLevelCap = 6400;
-        }
-        else if (divisionLevel == 6400) {
-            divisionRange = 320;
-            divisionLevelCap = 12800;
-        }
-        else if (divisionLevel == 12800) {
-            divisionRange = 640;
-            divisionLevelCap = 25600;
-        }
-        else if (divisionLevel == 25600) {
-            divisionRange = 1280;
-            divisionLevelCap = 51200;
-        }
+           divisionLevelCap  = divisionLevelCap + divisionLevelCap;
+           divisionRange = divisionRange + divisionRange;
+       }
     }
 
-    public void check(){
-        toAddition.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                decision = "addition";
-                toAddition.setEnabled(false);
-                setTheme();
-                new CountDownTimer(1000, 50) {
-                    @Override
-                    public void onTick(long arg0) {
-                    }
-                    @Override
-                    public void onFinish() {
-                        toAddition.setEnabled(true);
-                    }
-                }.start();
-            }
-        });
 
-        toSubtraction.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                decision = "subtraction";
-                toSubtraction.setEnabled(false);
-            setTheme();
-            new CountDownTimer(1000, 50) {
-                @Override
-                public void onTick(long arg0) {
-                }
-                @Override
-                public void onFinish() {
-                    toSubtraction.setEnabled(true);
-                }
-            }.start();
-            }
-        });
+    public void levelUpdates(){
+        additionLevelUpdates();
+        subtractionLevelUpdates();
+        multiplicationLevelUpdates();
+        divisionLevelUpdates();
+    }
+    public void leveling(int level , int levelCap){
+        ProgressBar progres = new ProgressBar(this);
+        progres = findViewById(R.id.progress_bar);
+        progres.setProgress(level);
+        progres.setMax(levelCap);
 
-        toMultiplication.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                decision = "multiplication";
-                toMultiplication.setEnabled(false);
-                setTheme();
-                new CountDownTimer(1000, 50) {
-                    @Override
-                    public void onTick(long arg0) {
-                    }
-                    @Override
-                    public void onFinish() {
-                        toMultiplication.setEnabled(true);
-                    }
-                }.start();
-            }
-        });
 
-        toDivision.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                decision = "division";
-                toDivision.setEnabled(false);
-                setTheme();
-                new CountDownTimer(1000, 50) {
-                    @Override
-                    public void onTick(long arg0) {
-                    }
-                    @Override
-                    public void onFinish() {
-                        toDivision.setEnabled(true);
-                    }
-                }.start();
-            }
-        });
     }
 
     public void setDecision(View view) {
+        saveLevel();
+        loadLevel();
+        clickCount = 1;
         switch (view.getId()) {
                 case R.id.toAddition:
                     decision = "addition";
                     setTheme();
+                    levelUpdates();
                     break;
 
                 case R.id.toSubtraction:
                     decision = "subtraction";
+                    levelUpdates();
                     setTheme();
                     break;
 
@@ -525,7 +502,7 @@ public class QuizActivity extends AppCompatActivity {
     }
 
     public void additionView(){
-        toAddition.setBackgroundColor(lightBlue);
+        toAddition.setBackgroundColor(darkerBlue);
         toSubtraction.setBackgroundColor(darkestPink);
         toMultiplication.setBackgroundColor(darkestPurple);
         toDivision.setBackgroundColor(darkestYellow);
@@ -537,7 +514,7 @@ public class QuizActivity extends AppCompatActivity {
     }
     public void subtractionView(){
         toAddition.setBackgroundColor(darkestBlue);
-        toSubtraction.setBackgroundColor(lightPink);
+        toSubtraction.setBackgroundColor(darkerPink);
         toMultiplication.setBackgroundColor(darkestPurple);
         toDivision.setBackgroundColor(darkestYellow);
 
@@ -549,7 +526,7 @@ public class QuizActivity extends AppCompatActivity {
     public void multiplicationView(){
         toAddition.setBackgroundColor(darkestBlue);
         toSubtraction.setBackgroundColor(darkestPink);
-        toMultiplication.setBackgroundColor(lightPurple);
+        toMultiplication.setBackgroundColor(darkerPurple);
         toDivision.setBackgroundColor(darkestYellow);
 
         toAddition.setEnabled(true);
@@ -561,7 +538,7 @@ public class QuizActivity extends AppCompatActivity {
         toAddition.setBackgroundColor(darkestBlue);
         toSubtraction.setBackgroundColor(darkestPink);
         toMultiplication.setBackgroundColor(darkestPurple);
-        toDivision.setBackgroundColor(lightYellow);
+        toDivision.setBackgroundColor(darkerYellow);
 
         toAddition.setEnabled(true);
         toSubtraction.setEnabled(true);
@@ -570,13 +547,17 @@ public class QuizActivity extends AppCompatActivity {
     }
 
 
-
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        saveLevel();
+    }
 
     public void randomize() {
-        //additionLevelUpdates();
         result.setText("X");
         displayLevels();
         generalResult = mathOperator.getResult();
+
 
         Random buttonRandomizer = new Random();
         int number = buttonRandomizer.nextInt(3) + 1;
@@ -599,100 +580,11 @@ public class QuizActivity extends AppCompatActivity {
         }
     }
 
-    public void randomizeSubtraction() {
-
-
-        subtractionLevelUpdates();
-
-        result.setText("X");
-
-        displayLevels();
-        subtraction = new Subtraction(subtractionRange);
-        generalResult = subtraction.getResult();
-
-        Random buttonRandomizer = new Random();
-        int number = buttonRandomizer.nextInt(3) + 1;
-
-        firstNumber.setText(String.valueOf(subtraction.getFirstNumber()));
-        secondNumber.setText(String.valueOf(subtraction.getSecondNumber()));
-
-        if (number == 1) {
-            firstRandom.setText(String.valueOf(subtraction.getRandomResultOne()));
-            secondRandom.setText(String.valueOf(subtraction.getResult()));
-            thirdRandom.setText(String.valueOf(subtraction.getRandomResultTwo()));
-        } else if (number == 2) {
-            firstRandom.setText(String.valueOf(subtraction.getRandomResultOne()));
-            thirdRandom.setText(String.valueOf(subtraction.getResult()));
-            secondRandom.setText(String.valueOf(subtraction.getRandomResultTwo()));
-        } else {
-            thirdRandom.setText(String.valueOf(subtraction.getRandomResultOne()));
-            firstRandom.setText(String.valueOf(subtraction.getResult()));
-            secondRandom.setText(String.valueOf(subtraction.getRandomResultTwo()));
-        }
-    }
-
-    public void randomizeMultiplication() {
-
-
-        multiplicationLevelUpdates();
-
-        result.setText("X");
-        displayLevels();
-        multiplication = new Multiplication(multiplicationRange);
-        generalResult = multiplication.getResult();
-
-        Random buttonRandomizer = new Random();
-        int number = buttonRandomizer.nextInt(3) + 1;
-
-        firstNumber.setText(String.valueOf(multiplication.getFirstNumber()));
-        secondNumber.setText(String.valueOf(multiplication.getSecondNumber()));
-
-        if (number == 1) {
-            firstRandom.setText(String.valueOf(multiplication.getRandomResultOne()));
-            secondRandom.setText(String.valueOf(multiplication.getResult()));
-            thirdRandom.setText(String.valueOf(multiplication.getRandomResultTwo()));
-        } else if (number == 2) {
-            firstRandom.setText(String.valueOf(multiplication.getRandomResultOne()));
-            thirdRandom.setText(String.valueOf(multiplication.getResult()));
-            secondRandom.setText(String.valueOf(multiplication.getRandomResultTwo()));
-        } else {
-            thirdRandom.setText(String.valueOf(multiplication.getRandomResultOne()));
-            firstRandom.setText(String.valueOf(multiplication.getResult()));
-            secondRandom.setText(String.valueOf(multiplication.getRandomResultTwo()));
-        }
-
-    }
-
-    public void randomizeDivision() {
-
-
-        result.setText("X");
-        displayLevels();
-        division = new Division(divisionRange);
-        generalResult = division.getResult();
-
-        Random buttonRandomizer = new Random();
-        int number = buttonRandomizer.nextInt(3) + 1;
-
-        firstNumber.setText(String.valueOf(division.getFirstNumber()));
-        secondNumber.setText(String.valueOf(division.getSecondNumber()));
-
-        if (number == 1) {
-            firstRandom.setText(String.valueOf(division.getRandomResultOne()));
-            secondRandom.setText(String.valueOf(division.getResult()));
-            thirdRandom.setText(String.valueOf(division.getRandomResultTwo()));
-        } else if (number == 2) {
-            firstRandom.setText(String.valueOf(division.getRandomResultOne()));
-            thirdRandom.setText(String.valueOf(division.getResult()));
-            secondRandom.setText(String.valueOf(division.getRandomResultTwo()));
-        } else {
-            thirdRandom.setText(String.valueOf(division.getRandomResultOne()));
-            firstRandom.setText(String.valueOf(division.getResult()));
-            secondRandom.setText(String.valueOf(division.getRandomResultTwo()));
-        }
-    }
 
     public void answer(View view) {
+       // saveLevel();
+
+
         switch (view.getId()) {
             case R.id.first_random:
                 if (Integer.valueOf((String) firstRandom.getText()) == generalResult) {
@@ -700,24 +592,37 @@ public class QuizActivity extends AppCompatActivity {
                     //levelUp();
                     displayLevels();
 
-                    //playSpecificFile();
+
+
+
+                    playSpecificFile();
+
+                    clickCount++;
+                    reachedFive();
+
                     colorChangerCorrect(firstRandom);
                 }
                 else {
                     colorChangerIncorrect(firstRandom);
+                    clickCount = 1;
                 }
                 break;
 
             case R.id.second_random:
                 if (Integer.valueOf((String) secondRandom.getText()) == generalResult) {
                     result.setText(secondRandom.getText());
-                    //playSpecificFile();
+
+                    playSpecificFile();
+
+                    clickCount++;
+                    reachedFive();
 
                     displayLevels();
                     colorChangerCorrect(secondRandom);
                 }
                 else {
                     colorChangerIncorrect(secondRandom);
+                    clickCount = 1;
 
                 }
                 break;
@@ -725,12 +630,18 @@ public class QuizActivity extends AppCompatActivity {
             case R.id.third_random:
                 if (Integer.valueOf((String) thirdRandom.getText()) == generalResult) {
                     result.setText(thirdRandom.getText());
-                    //playSpecificFile();
                     displayLevels();
+
+                    playSpecificFile();
+
+                    clickCount++;
+                    reachedFive();
+
                     colorChangerCorrect(thirdRandom);
                 }
                 else {
                     colorChangerIncorrect(thirdRandom);
+                    clickCount = 1;
 
                 }
                 break;
@@ -741,81 +652,118 @@ public class QuizActivity extends AppCompatActivity {
 
 
     public void reachedFive(){
-        if (fiveInRow.get(4).equals(true)){
-            this.fiveInRow = new ArrayList<>(4);
+        if (clickCount == 9) {
+            clickCount = 1;
         }
-
     }
 
     public void playSpecificFile() {
 
-        if (clickCount == 0) {
-            try {
-                player1.prepare();
-                player1.start();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
+        if (clickCount == 1) {
+            player1.start();
 
         }
 
-         if (clickCount == 1) {
+         if (clickCount == 2) {
+
              player2.start();
         }
 
-        if (clickCount == 2) {
-            player3.start();
-        }
+        if (clickCount == 3) {
 
-        if (clickCount == 3){
-            player4.start();
+            player3.start();
+
         }
 
         if (clickCount == 4){
+
+            player4.start();
+        }
+
+        if (clickCount == 5){
             player5.start();
         }
+
+        if (clickCount == 6){
+            player6.start();
+        }
+
+        if (clickCount == 7){
+            player7.start();
+        }
+
+        if (clickCount == 8){
+            player8.start();
         }
 
 
+        }
+
+    public String levelUpMessage(int n , String s){
+        return "You reached level " + n + " in " +  s  +". \n ";
+    }
 
     public void initializeSounds() {
         try {
-            player1 = new MediaPlayer();
-            player1.setDataSource(QuizActivity.this,
-                    Uri.parse("android.resource://com.app.dizdarious.quickmath/" + R.raw.note1));
+            player1.setDataSource(getApplicationContext(),
+                    Uri.parse("android.resource://com.app.dizdarious.quickmath/" + R.raw.one));
+            player1.prepare();
+           //g[ player1.setLooping(true);
 
-            player2 = new MediaPlayer();
-            player2.setDataSource(QuizActivity.this,
-                    Uri.parse("android.resource://com.app.dizdarious.quickmath/" + R.raw.note2));
+            player2.setDataSource(getApplicationContext(),
+                    Uri.parse("android.resource://com.app.dizdarious.quickmath/" + R.raw.two));
+            player2.prepare();
 
-            player3 = new MediaPlayer();
-            player3.setDataSource(QuizActivity.this,
-                    Uri.parse("android.resource://com.app.dizdarious.quickmath/" + R.raw.note3));
+            player3.setDataSource(getApplicationContext(),
+                    Uri.parse("android.resource://com.app.dizdarious.quickmath/" + R.raw.tree));
+            player3.prepare();
 
-            player4 = new MediaPlayer();
-            player4.setDataSource(QuizActivity.this,
-                    Uri.parse("android.resource://com.app.dizdarious.quickmath/" + R.raw.note4));
+            player4.setDataSource(getApplicationContext(),
+                    Uri.parse("android.resource://com.app.dizdarious.quickmath/" + R.raw.four));
+            player4.prepare();
 
-            player5 = new MediaPlayer();
-            player5.setDataSource(QuizActivity.this,
-                    Uri.parse("android.resource://com.app.dizdarious.quickmath/" + R.raw.note5));
+            player5.setDataSource(getApplicationContext(),
+                    Uri.parse("android.resource://com.app.dizdarious.quickmath/" + R.raw.five));
+            player5.prepare();
 
-            player6 = new MediaPlayer();
-            player6.setDataSource(QuizActivity.this,
-                    Uri.parse("android.resource://com.app.dizdarious.quickmath/" + R.raw.level_bonus));
+            player6.setDataSource(getApplicationContext(),
+                    Uri.parse("android.resource://com.app.dizdarious.quickmath/" + R.raw.six));
+            player6.prepare();
+
+            player7.setDataSource(getApplicationContext(),
+                    Uri.parse("android.resource://com.app.dizdarious.quickmath/" + R.raw.seven));
+            player7.prepare();
+
+            player8.setDataSource(getApplicationContext(),
+                    Uri.parse("android.resource://com.app.dizdarious.quickmath/" + R.raw.eight));
+            player8.prepare();
+
+            player9.setDataSource(getApplicationContext(),
+                    Uri.parse("android.resource://com.app.dizdarious.quickmath/" + R.raw.level_up));
+            player9.prepare();
 
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+
+
+
+
     }
 
     public void colorChangerCorrect(final Button button_id){
-        button_id.setBackgroundColor(darkerLime);
+        button_id.setBackgroundColor(darkestLime);
         blockMultipleClicks();
+        levelUpdates();
+        levelUpMethod(12);
+        levelProgressBarUpdate();
+        saveLevel();
+        //loadLevel();
 
-        //fiveInRow.add(true);
-        new CountDownTimer(1000, 50) {
+
+
+        new CountDownTimer(700, 50) {
 
             @Override
             public void onTick(long arg0) {
@@ -825,35 +773,38 @@ public class QuizActivity extends AppCompatActivity {
 
                 if (decision.equals("addition")) {
                     button_id.setBackgroundColor(lightBlue);
-                    additionLevel = additionLevel + 5;
-                    additionLevelUpdates();
                     mathOperator.addition(additionRange);
                     randomize();
-                    clickCount++;
+
+                    levelUpMethod(13);
+                    levelProgressBarUpdate();
+
+                    displayLevels();
                 }
                 else if (decision.equals("subtraction")){
                     button_id.setBackgroundColor(lightPink);
-                    subtractionLevel = subtractionLevel + 5;
-                    subtractionLevelUpdates();
                     mathOperator.subtraction(subtractionRange);
                     randomize();
-                    clickCount++;
+
+                    levelUpMethod(13);
+                    levelProgressBarUpdate();
+
                 }
                 else if (decision.equals("multiplication")){
                     button_id.setBackgroundColor(lightPurple);
-                    multiplicationLevel = multiplicationLevel + 5;
-                    multiplicationLevelUpdates();
                     mathOperator.multiplication(multiplicationRange);
                     randomize();
-                    clickCount++;
+                    levelUpMethod(13);
+                    levelProgressBarUpdate();
+
                 }
                 else if (decision.equals("division")){
                     button_id.setBackgroundColor(lightYellow);
-                    divisionLevel = divisionLevel + 5;
-                    divisionLevelUpdates();
                     mathOperator.division(divisionRange);
                     randomize();
-                    clickCount++;
+                    levelUpMethod(13);
+                    levelProgressBarUpdate();
+
                 }
 
                 //playSpecificFile();
@@ -862,7 +813,7 @@ public class QuizActivity extends AppCompatActivity {
         }.start();
     }
     public void colorChangerIncorrect(final Button button_id){
-        button_id.setBackgroundColor(lightRed);
+        button_id.setBackgroundColor(darkestRed);
         blockMultipleClicks();
         new CountDownTimer(1000, 50) {
 
@@ -873,23 +824,128 @@ public class QuizActivity extends AppCompatActivity {
             public void onFinish() {
                 if (decision.equals("addition")) {
                     button_id.setBackgroundColor(lightBlue);
-                    clickCount = 0;
+                    clickCount = 1;
                 }
                 else if (decision.equals("subtraction")){
                     button_id.setBackgroundColor(lightPink);
-                    clickCount = 0;
+                    clickCount = 1;
                 }
                 else if (decision.equals("multiplication")){
                     button_id.setBackgroundColor(lightPurple);
-                    clickCount = 0;
+                    clickCount = 1;
                 }
                 else if (decision.equals("division")){
                     button_id.setBackgroundColor(lightYellow);
-                    clickCount = 0;
+                    clickCount = 1;
                 }
             }
         }.start();
     }
+
+    public void levelProgressBarUpdate(){
+        if (decision.equals("addition")) {
+            additionLevelUpdates();
+            leveling(additionLevel,additionLevelCap);
+            displayLevels();
+        }
+
+        else if (decision.equals("subtraction")){
+            subtractionLevelUpdates();
+            leveling(subtractionLevel,subtractionLevelCap);
+            displayLevels();
+        }
+        else if (decision.equals("multiplication")){
+            multiplicationLevelUpdates();
+            leveling(multiplicationLevel,multiplicationLevelCap);
+            displayLevels();
+        }
+        else if (decision.equals("division")){
+            divisionLevelUpdates();
+            leveling(divisionLevel,divisionLevelCap);
+            displayLevels();
+
+        }
+    }
+
+    public void levelUpNotify(String n){
+        final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = this.getLayoutInflater();
+        player9.start();
+        final View levelView = inflater.inflate(R.layout.pop_up, null);
+        dialogBuilder.setView(levelView);
+        final AlertDialog alertDialog = dialogBuilder.create();
+        alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+        alertDialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
+
+        alertDialog.show();
+
+
+        LinearLayout level = levelView.findViewById(R.id.level_holder);
+        level.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                alertDialog.cancel();
+            }
+        });
+
+        TextView levelUp = levelView.findViewById(R.id.level_up_text);
+       // levelUp.setText(n);
+
+
+
+
+
+        if (decision.equals("addition")){
+            levelUp.setText(n);
+
+            levelUp.setTextColor(darkestBlue);
+
+
+        }
+
+        else if (decision.equals("subtraction")){
+            levelUp.setText(n);
+
+            levelUp.setTextColor(darkestPink);
+
+
+        }
+        else if (decision.equals("multiplication")){
+            levelUp.setText(n);
+
+            levelUp.setTextColor(darkestPurple);
+
+
+        }
+        else if (decision.equals("division")){
+            levelUp.setText(n);
+
+            levelUp.setTextColor(darkestYellow);
+
+
+        }
+
+
+
+    }
+
+
+    public void levelUpMethod(int n){
+        if (decision.equals("addition")) {
+            additionLevel = additionLevel + n;
+        }
+        else if (decision.equals("subtraction")){
+            subtractionLevel = subtractionLevel + n;
+        }
+        else if (decision.equals("multiplication")){
+            multiplicationLevel = multiplicationLevel + n;
+        }
+        else if (decision.equals("division")){
+            divisionLevel = divisionLevel + n;
+
+        }
+    }
+
 
     public void blockMultipleClicks(){
         firstRandom.setEnabled(false);
@@ -972,6 +1028,8 @@ public class QuizActivity extends AppCompatActivity {
         thirdRandom.setBackgroundColor(lightYellow);
         thirdRandom.setTextColor(darkestYellow);
     }
+
+
 
 
 
