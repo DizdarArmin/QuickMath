@@ -16,17 +16,18 @@ public class MathOperator {
     private int randomResultTwo;
 
 
+
     private String operator;
     private Random random;
 
-
-
     MathOperator(){
         random = new Random();
-
     }
 
-    public void addition (int number){
+
+
+
+    void addition (int number){
         firstNumber = random.nextInt(number);
         secondNumber = random.nextInt(number);
         operator = "+";
@@ -34,9 +35,10 @@ public class MathOperator {
 
         randomResultOne = random.nextInt(result + result);
         randomResultTwo = random.nextInt(result);
+
     }
 
-    public void subtraction (int number) {
+    void subtraction (int number) {
         firstNumber = random.nextInt(number) + 1;
         secondNumber = random.nextInt(firstNumber);
         operator = "-";
@@ -44,9 +46,10 @@ public class MathOperator {
 
         randomResultOne = random.nextInt(result * 2);
         randomResultTwo = random.nextInt(result + result/2);
+
     }
 
-    public void multiplication (int number){
+    void multiplication (int number){
         firstNumber = random.nextInt(number) + 1;
         secondNumber = random.nextInt(number ) + 1;
         operator = "*";
@@ -57,7 +60,7 @@ public class MathOperator {
         randomResultTwo = random.nextInt(result - result/5) + 1;
     }
 
-    public void division (int number){
+    void division (int number){
         ArrayList<Integer> allDivisors = new ArrayList<>();
         int numberHelper;
         int i;
@@ -80,6 +83,7 @@ public class MathOperator {
         randomResultOne = random.nextInt(result * 5) + 1;
         randomResultTwo = random.nextInt(result * 4) + 1;
     }
+
 
 
 

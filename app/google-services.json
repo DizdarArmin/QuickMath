@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "89460065609",
+    "firebase_url": "https://quickmath-c9a9c.firebaseio.com",
+    "project_id": "quickmath-c9a9c",
+    "storage_bucket": "quickmath-c9a9c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:89460065609:android:fad9edb203c948b1",
+        "android_client_info": {
+          "package_name": "com.app.dizdarious.quickmath"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "89460065609-6rh3eqpvggcfjbpmdiditsdn3v30fkj8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.app.dizdarious.quickmath",
+            "certificate_hash": "48e33cf26b7991908385bde2f9bd28ff9829cb61"
+          }
+        },
+        {
+          "client_id": "89460065609-3idq67om90u3iev949qnfnv91spcgrn6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDUaWDaSgmcZ6yU0odq0SdqknSYQ7wmBVY"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "89460065609-3idq67om90u3iev949qnfnv91spcgrn6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

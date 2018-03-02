@@ -26,6 +26,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Random;
 
+import static android.webkit.ConsoleMessage.MessageLevel.LOG;
+
 /**
  * Created by Dizdar on 2018-02-22.
  */
@@ -53,6 +55,18 @@ public class QuizActivity extends AppCompatActivity {
     Button firstRandom;
     Button secondRandom;
     Button thirdRandom;
+
+    int additionCorrect;
+    int additionIncorrect;
+
+    int subtractionCorrect;
+    int subtractionIncorrect;
+
+    int multiplicationCorrect;
+    int multiplicationIncorrect;
+
+    int divisionCorrect;
+    int divisionIncorrect;
 
 
     int additionUp = 1;
@@ -86,6 +100,8 @@ public class QuizActivity extends AppCompatActivity {
     TextView multiplicationLevelView;
     TextView divisionLevelView;
 
+    TextView guideHolder;
+    String toReturn = null;
 
     int generalResult;
     int clickCount;
@@ -133,6 +149,7 @@ public class QuizActivity extends AppCompatActivity {
 
 
     ArrayList <Boolean> fiveInRow;
+    int sound;
 
 
     ConstraintLayout fatherLayout;
@@ -140,7 +157,6 @@ public class QuizActivity extends AppCompatActivity {
     MathOperator mathOperator;
 
 
-    boolean levelChanged;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -212,6 +228,8 @@ public class QuizActivity extends AppCompatActivity {
         toMultiplication = findViewById(R.id.toMultiplication);
         toDivision = findViewById(R.id.toDivision);
 
+        guideHolder = findViewById(R.id.text_holder);
+
 
 
 
@@ -229,6 +247,8 @@ public class QuizActivity extends AppCompatActivity {
         operator = findViewById(R.id.operator);
         secondNumber = findViewById(R.id.second_number);
         result = findViewById(R.id.result);
+
+
 
         firstRandom = findViewById(R.id.first_random);
         secondRandom = findViewById(R.id.second_random);
@@ -252,6 +272,8 @@ public class QuizActivity extends AppCompatActivity {
 
     } // End of onCreate
 
+
+
     public void setTheme() {
         levelUpdates();
         if (decision.equals("addition")) {
@@ -259,6 +281,8 @@ public class QuizActivity extends AppCompatActivity {
             kids_holder.setImageResource(R.drawable.kid_one);
             operator.setText("+");
             mathOperator.addition(additionRange);
+            guideHolder.setText("Are you ready \n for addition?");
+
 
             loadLevel();
             levelUpdates();
@@ -275,6 +299,7 @@ public class QuizActivity extends AppCompatActivity {
             kids_holder.setImageResource(R.drawable.kid_four);
             mathOperator.subtraction(subtractionRange);
             operator.setText("-");
+            guideHolder.setText("Let's do \n subtraction");
 
             loadLevel();
             levelUpdates();
@@ -291,6 +316,7 @@ public class QuizActivity extends AppCompatActivity {
             kids_holder.setImageResource(R.drawable.kid_tree);
             mathOperator.multiplication(multiplicationRange);
             operator.setText("*");
+            guideHolder.setText("How good are you \n with multiplication?");
 
             loadLevel();
             levelUpdates();
@@ -306,6 +332,7 @@ public class QuizActivity extends AppCompatActivity {
             colorThemeYellow();
             operator.setText("/");
             mathOperator.division(divisionRange);
+            guideHolder.setText("Ready for division?");
 
 
             loadLevel();
@@ -328,18 +355,26 @@ public class QuizActivity extends AppCompatActivity {
         editor.putInt("addition", additionUp);
         editor.putInt("addition_exp", additionLevel);
         editor.putInt("addition_level_cap", additionLevelCap);
+        editor.putInt("additionCorrect", additionCorrect);
+        editor.putInt("additionIncorrect", additionIncorrect);
 
         editor.putInt("subtraction", subtractionUp);
         editor.putInt("subtraction_exp" , subtractionLevel);
         editor.putInt("subtraction_level_cap", subtractionLevelCap);
+        editor.putInt("subtractionCorrect", subtractionCorrect);
+        editor.putInt("subtractionIncorrect", subtractionIncorrect);
 
         editor.putInt("multiplication" , multiplicationUp);
         editor.putInt("multiplication_exp", multiplicationLevel);
         editor.putInt("multiplication_level_cap", multiplicationLevelCap);
+        editor.putInt("multiplicationCorrect", multiplicationCorrect);
+        editor.putInt("multiplicationIncorrect",multiplicationIncorrect);
 
         editor.putInt("division" , divisionUp);
         editor.putInt("division_exp", divisionLevel);
         editor.putInt("division_level_cap", divisionLevelCap);
+        editor.putInt("divisionCorrect", divisionCorrect);
+        editor.putInt("divisionIncorrect", divisionIncorrect);
         editor.commit();
 
     }
@@ -348,21 +383,33 @@ public class QuizActivity extends AppCompatActivity {
 
         SharedPreferences prefs = getSharedPreferences("LEVEL", MODE_PRIVATE);
 
+        sound = prefs.getInt("sound",-1);
+
         additionUp = prefs.getInt("addition", -1);
         additionLevel = prefs.getInt("addition_exp", -1);
         additionLevelCap = prefs.getInt("addition_level_cap", -1);
+        additionCorrect = prefs.getInt("additionCorrect",-1);
+        additionIncorrect = prefs.getInt("additionIncorrect",-1);
+
 
         subtractionUp = prefs.getInt("subtraction", -1);
         subtractionLevel = prefs.getInt("subtraction_exp", -1);
         subtractionLevelCap = prefs.getInt("subtraction_level_cap", -1);
+        subtractionCorrect = prefs.getInt("subtractionCorrect",-1);
+        subtractionIncorrect = prefs.getInt("subtractionIncorrect",-1);
+
 
         multiplicationUp = prefs.getInt("multiplication", -1);
         multiplicationLevel = prefs.getInt("multiplication_exp", -1);
         multiplicationLevelCap = prefs.getInt("multiplication_level_cap", -1);
+        multiplicationCorrect = prefs.getInt("multiplicationCorrect",-1);
+        multiplicationIncorrect = prefs.getInt("multiplicationIncorrect",-1);
 
         divisionUp = prefs.getInt("division", -1);
         divisionLevel = prefs.getInt("division_exp", -1);
         divisionLevelCap = prefs.getInt("division_level_cap", -1);
+        divisionCorrect = prefs.getInt("divisionCorrect",-1);
+        divisionIncorrect = prefs.getInt("divisionIncorrect",-1);
 
     }
 
@@ -382,16 +429,16 @@ public class QuizActivity extends AppCompatActivity {
     }
 
     public String additionToString(){
-            return  "LVL " + additionUp;
+            return  "Level " + additionUp;
     }
     public String subtractionToString(){
-        return "LVL " + subtractionUp;
+        return "Level " + subtractionUp;
     }
     public String multiplicationToString(){
-            return "LVL " + multiplicationUp;
+            return "Level " + multiplicationUp;
     }
     public String divisionToString(){
-        return "LVL " + divisionUp;
+        return "Level " + divisionUp;
     }
 
     public void notifyUser (){
@@ -551,12 +598,16 @@ public class QuizActivity extends AppCompatActivity {
     public void onBackPressed() {
         super.onBackPressed();
         saveLevel();
+        Intent i = new Intent(this,MainActivity.class);
+        startActivity(i);
     }
 
     public void randomize() {
         result.setText("X");
         displayLevels();
         generalResult = mathOperator.getResult();
+
+        //  XguideHolder.setText("");
 
 
         Random buttonRandomizer = new Random();
@@ -581,6 +632,7 @@ public class QuizActivity extends AppCompatActivity {
     }
 
 
+
     public void answer(View view) {
        // saveLevel();
 
@@ -591,11 +643,9 @@ public class QuizActivity extends AppCompatActivity {
                     result.setText(String.valueOf(firstRandom.getText()));
                     //levelUp();
                     displayLevels();
-
-
-
-
                     playSpecificFile();
+
+                    guideHolder.setText(correctAnswer());
 
                     clickCount++;
                     reachedFive();
@@ -604,6 +654,7 @@ public class QuizActivity extends AppCompatActivity {
                 }
                 else {
                     colorChangerIncorrect(firstRandom);
+                    guideHolder.setText("Try again");
                     clickCount = 1;
                 }
                 break;
@@ -612,6 +663,7 @@ public class QuizActivity extends AppCompatActivity {
                 if (Integer.valueOf((String) secondRandom.getText()) == generalResult) {
                     result.setText(secondRandom.getText());
 
+                    guideHolder.setText(correctAnswer());
                     playSpecificFile();
 
                     clickCount++;
@@ -622,6 +674,7 @@ public class QuizActivity extends AppCompatActivity {
                 }
                 else {
                     colorChangerIncorrect(secondRandom);
+                    guideHolder.setText("Hmm, that's wrong");
                     clickCount = 1;
 
                 }
@@ -631,7 +684,7 @@ public class QuizActivity extends AppCompatActivity {
                 if (Integer.valueOf((String) thirdRandom.getText()) == generalResult) {
                     result.setText(thirdRandom.getText());
                     displayLevels();
-
+                    guideHolder.setText(correctAnswer());
                     playSpecificFile();
 
                     clickCount++;
@@ -641,6 +694,7 @@ public class QuizActivity extends AppCompatActivity {
                 }
                 else {
                     colorChangerIncorrect(thirdRandom);
+                    guideHolder.setText("Go again");
                     clickCount = 1;
 
                 }
@@ -658,15 +712,15 @@ public class QuizActivity extends AppCompatActivity {
     }
 
     public void playSpecificFile() {
-
+    if(sound == 1) {
         if (clickCount == 1) {
             player1.start();
 
         }
 
-         if (clickCount == 2) {
+        if (clickCount == 2) {
 
-             player2.start();
+            player2.start();
         }
 
         if (clickCount == 3) {
@@ -675,29 +729,28 @@ public class QuizActivity extends AppCompatActivity {
 
         }
 
-        if (clickCount == 4){
+        if (clickCount == 4) {
 
             player4.start();
         }
 
-        if (clickCount == 5){
+        if (clickCount == 5) {
             player5.start();
         }
 
-        if (clickCount == 6){
+        if (clickCount == 6) {
             player6.start();
         }
 
-        if (clickCount == 7){
+        if (clickCount == 7) {
             player7.start();
         }
 
-        if (clickCount == 8){
+        if (clickCount == 8) {
             player8.start();
-        }
-
-
-        }
+            }
+    }
+    }
 
     public String levelUpMessage(int n , String s){
         return "You reached level " + n + " in " +  s  +". \n ";
@@ -763,7 +816,7 @@ public class QuizActivity extends AppCompatActivity {
 
 
 
-        new CountDownTimer(700, 50) {
+        new CountDownTimer(1200, 50) {
 
             @Override
             public void onTick(long arg0) {
@@ -775,7 +828,7 @@ public class QuizActivity extends AppCompatActivity {
                     button_id.setBackgroundColor(lightBlue);
                     mathOperator.addition(additionRange);
                     randomize();
-
+                    additionCorrect++;
                     levelUpMethod(13);
                     levelProgressBarUpdate();
 
@@ -785,6 +838,7 @@ public class QuizActivity extends AppCompatActivity {
                     button_id.setBackgroundColor(lightPink);
                     mathOperator.subtraction(subtractionRange);
                     randomize();
+                    subtractionCorrect++;
 
                     levelUpMethod(13);
                     levelProgressBarUpdate();
@@ -794,6 +848,7 @@ public class QuizActivity extends AppCompatActivity {
                     button_id.setBackgroundColor(lightPurple);
                     mathOperator.multiplication(multiplicationRange);
                     randomize();
+                    multiplicationCorrect++;
                     levelUpMethod(13);
                     levelProgressBarUpdate();
 
@@ -802,6 +857,7 @@ public class QuizActivity extends AppCompatActivity {
                     button_id.setBackgroundColor(lightYellow);
                     mathOperator.division(divisionRange);
                     randomize();
+                    divisionCorrect++;
                     levelUpMethod(13);
                     levelProgressBarUpdate();
 
@@ -824,18 +880,22 @@ public class QuizActivity extends AppCompatActivity {
             public void onFinish() {
                 if (decision.equals("addition")) {
                     button_id.setBackgroundColor(lightBlue);
+                    additionIncorrect++;
                     clickCount = 1;
                 }
                 else if (decision.equals("subtraction")){
                     button_id.setBackgroundColor(lightPink);
+                    subtractionIncorrect++;
                     clickCount = 1;
                 }
                 else if (decision.equals("multiplication")){
                     button_id.setBackgroundColor(lightPurple);
                     clickCount = 1;
+                    multiplicationIncorrect++;
                 }
                 else if (decision.equals("division")){
                     button_id.setBackgroundColor(lightYellow);
+                    divisionIncorrect++;
                     clickCount = 1;
                 }
             }
@@ -868,6 +928,8 @@ public class QuizActivity extends AppCompatActivity {
     }
 
     public void levelUpNotify(String n){
+
+
         final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
         LayoutInflater inflater = this.getLayoutInflater();
         player9.start();
@@ -881,6 +943,16 @@ public class QuizActivity extends AppCompatActivity {
 
 
         LinearLayout level = levelView.findViewById(R.id.level_holder);
+        new CountDownTimer(2500, 50) {
+
+            @Override
+            public void onTick(long arg0) {
+            }
+            @Override
+            public void onFinish() {
+                alertDialog.cancel();
+            }}.start();
+
         level.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -965,6 +1037,16 @@ public class QuizActivity extends AppCompatActivity {
         }.start();
     }
 
+
+
+    public String correctAnswer(){
+        Random random = new Random();
+        String[] correct = {"You found a really \n good way to do it!", "You seem to really \n understand this!", "I can tell you’ve \n been practicing!",
+               "Good thinking!","Great answer!","Awesome!","You are \n unique!", "Fantastic!","You're a \n problem solver!", "You learn \n quickly!","Brilliant!",
+               "You're winner!","So proud of you!","Excellent!"};
+        int n = random.nextInt(correct.length);
+        return correct[n];
+    }
 
 
 
