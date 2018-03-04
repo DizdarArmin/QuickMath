@@ -8,8 +8,21 @@
 
     <LinearLayout
         android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="right"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/exit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@android:drawable/ic_menu_close_clear_cancel" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="40dp"
         android:layout_weight="1"
         android:orientation="vertical">
 
@@ -42,49 +55,81 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                app:srcCompat="@android:drawable/btn_star_big_on" />
+                app:srcCompat="@drawable/buy5" />
 
             <ImageView
                 android:id="@+id/imageView5"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                app:srcCompat="@android:drawable/btn_star_big_on" />
+                app:srcCompat="@drawable/buy15" />
 
             <ImageView
                 android:id="@+id/imageView4"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                app:srcCompat="@android:drawable/btn_star_big_on" />
+                app:srcCompat="@drawable/buy25" />
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
             android:orientation="horizontal">
 
             <Button
-                android:id="@+id/button2"
+                android:id="@+id/first"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginRight="1dp"
                 android:layout_weight="1"
-                android:text="Buy for 25" />
+                android:background="@color/darkerLime"
+                android:fontFamily="@font/antic_slab"
+                android:text="Buy for 100"
+                android:textAllCaps="false"
+                android:textColor="@android:color/white" />
 
             <Button
-                android:id="@+id/button3"
+                android:id="@+id/second"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginRight="1dp"
                 android:layout_weight="1"
-                android:text="Buy for 100" />
+                android:background="@color/darkerLime"
+                android:fontFamily="@font/antic_slab"
+                android:text="Buy for 200"
+                android:textAllCaps="false"
+                android:textColor="@android:color/white" />
 
             <Button
-                android:id="@+id/button4"
+                android:id="@+id/third"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Buy for 500" />
+                android:background="@color/darkerLime"
+                android:fontFamily="@font/antic_slab"
+                android:text="Buy for 500"
+                android:textAllCaps="false"
+                android:textColor="@android:color/white" />
         </LinearLayout>
 
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/no_coins"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/antic_slab"
+            android:textColor="@android:color/white"
+            android:textSize="24sp" />
     </LinearLayout>
 </LinearLayout>

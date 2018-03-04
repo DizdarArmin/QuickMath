@@ -1,10 +1,12 @@
 package com.app.dizdarious.quickmath;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.graphics.drawable.ColorDrawable;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
@@ -20,6 +22,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -70,12 +73,10 @@ public class QuizActivity extends AppCompatActivity {
 
 
     int additionUp = 1;
-
-
-
     int subtractionUp = 1;
     int multiplicationUp = 1;
     int divisionUp = 1;
+
 
     int additionLevel;
     int subtractionLevel;
@@ -83,9 +84,9 @@ public class QuizActivity extends AppCompatActivity {
     int divisionLevel;
 
 
-    int additionRange = 10;
+    int additionRange = 5;
     int subtractionRange = 10;
-    int multiplicationRange = 10;
+    int multiplicationRange = 5;
     int divisionRange = 10;
 
 
@@ -105,6 +106,12 @@ public class QuizActivity extends AppCompatActivity {
 
     int generalResult;
     int clickCount;
+
+    int knowledgeCoin;
+    int wisdomCoin;
+
+    TextView knowledgeCoinView;
+    TextView wisdomCoinView;
 
     //COLORS
     static int lightRed;
@@ -135,7 +142,6 @@ public class QuizActivity extends AppCompatActivity {
 
     String decision;
 
-
     LinearLayout equation_holder;
     LinearLayout number_holder;
     ImageView kids_holder;
@@ -145,15 +151,12 @@ public class QuizActivity extends AppCompatActivity {
     LinearLayout toMultiplication;
     LinearLayout toDivision;
 
-
-
+    LinearLayout coinHolder;
 
     ArrayList <Boolean> fiveInRow;
     int sound;
-
-
+    int deviceSound;
     ConstraintLayout fatherLayout;
-
     MathOperator mathOperator;
 
 
@@ -172,14 +175,11 @@ public class QuizActivity extends AppCompatActivity {
         player8 = new MediaPlayer();
         player9 = new MediaPlayer();
 
-        initializeSounds();
-
-
+        //initializeSounds();
+        //initLoopSound();
+        checkUserSoundSpecification(getApplicationContext());
 
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-
-
-
 
         mathOperator = new MathOperator();
 
@@ -189,6 +189,7 @@ public class QuizActivity extends AppCompatActivity {
         number_holder = findViewById(R.id.number_holder);
         fatherLayout = findViewById(R.id.father);
         kids_holder= findViewById(R.id.kids_holder);
+        coinHolder = findViewById(R.id.coin_holder);
 
         transparent = ResourcesCompat.getColor(getResources(), R.color.transparent, null);
 
@@ -216,12 +217,7 @@ public class QuizActivity extends AppCompatActivity {
         darkerYellow = ResourcesCompat.getColor(getResources(), R.color.darkerYellow, null);
         darkestYellow = ResourcesCompat.getColor(getResources(), R.color.darkestYellow, null);
 
-
-
-
-
         fiveInRow = new ArrayList<>(4);
-
 
         toAddition = findViewById(R.id.toAddition);
         toSubtraction = findViewById(R.id.toSubtraction);
@@ -230,34 +226,24 @@ public class QuizActivity extends AppCompatActivity {
 
         guideHolder = findViewById(R.id.text_holder);
 
-
-
-
         Intent intent = getIntent();
         decision = intent.getStringExtra(MainActivity.EXTRA_MESSAGE);
-
 
         additionLevelView = findViewById(R.id.addition_level);
         subtractionLevelView = findViewById(R.id.subtraction_level);
         multiplicationLevelView = findViewById(R.id.multiplication_level);
         divisionLevelView = findViewById(R.id.division_level);
 
-
         firstNumber = findViewById(R.id.first_number);
         operator = findViewById(R.id.operator);
         secondNumber = findViewById(R.id.second_number);
         result = findViewById(R.id.result);
-
-
 
         firstRandom = findViewById(R.id.first_random);
         secondRandom = findViewById(R.id.second_random);
         thirdRandom = findViewById(R.id.third_random);
 
         clickCount = 1;
-
-
-
 
             setTheme();
             loadLevel();
@@ -266,13 +252,22 @@ public class QuizActivity extends AppCompatActivity {
             displayLevels();
 
 
-        //additionLevel = 0;
 
+
+        knowledgeCoinView = findViewById(R.id.knowledge_coin);
+        wisdomCoinView = findViewById(R.id.wisdom_coin);
+        updateCoins();
+
+
+        playLoopSound();
 
 
     } // End of onCreate
 
-
+    public void updateCoins(){
+        knowledgeCoinView.setText(String.valueOf(knowledgeCoin));
+        wisdomCoinView.setText(String.valueOf(wisdomCoin));
+    }
 
     public void setTheme() {
         levelUpdates();
@@ -344,9 +339,6 @@ public class QuizActivity extends AppCompatActivity {
             displayLevels();
             randomize();
         }
-
-
-
     }
 
     public void saveLevel(){
@@ -375,7 +367,12 @@ public class QuizActivity extends AppCompatActivity {
         editor.putInt("division_level_cap", divisionLevelCap);
         editor.putInt("divisionCorrect", divisionCorrect);
         editor.putInt("divisionIncorrect", divisionIncorrect);
+
+        editor.putInt("knowledge_coin", knowledgeCoin);
+        editor.putInt("wisdom_coin", wisdomCoin);
         editor.commit();
+
+
 
     }
 
@@ -383,7 +380,11 @@ public class QuizActivity extends AppCompatActivity {
 
         SharedPreferences prefs = getSharedPreferences("LEVEL", MODE_PRIVATE);
 
-        sound = prefs.getInt("sound",-1);
+        knowledgeCoin = prefs.getInt("knowledge_coin",0);
+        wisdomCoin = prefs.getInt("wisdom_coin",0);
+        sound = prefs.getInt("sound",0);
+
+
 
         additionUp = prefs.getInt("addition", -1);
         additionLevel = prefs.getInt("addition_exp", -1);
@@ -413,8 +414,21 @@ public class QuizActivity extends AppCompatActivity {
 
     }
 
+    public void checkUserSoundSpecification(Context context){
+        AudioManager audio = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
 
-
+        switch( audio.getRingerMode() ){
+            case AudioManager.RINGER_MODE_NORMAL:
+                deviceSound = 1;
+                break;
+            case AudioManager.RINGER_MODE_SILENT:
+                deviceSound = 0;
+                break;
+            case AudioManager.RINGER_MODE_VIBRATE:
+                deviceSound = 0;
+                break;
+        }
+    }
     public void playFile(){
         player1.start();
 
@@ -444,7 +458,7 @@ public class QuizActivity extends AppCompatActivity {
     public void notifyUser (){
        if (decision.equals("addition")){
         levelUpNotify(levelUpMessage(additionUp, "addition"));
-           playFile();
+
        }
 
        else if (decision.equals("subtraction")){
@@ -501,14 +515,13 @@ public class QuizActivity extends AppCompatActivity {
            divisionRange = divisionRange + divisionRange;
        }
     }
-
-
     public void levelUpdates(){
         additionLevelUpdates();
         subtractionLevelUpdates();
         multiplicationLevelUpdates();
         divisionLevelUpdates();
     }
+
     public void leveling(int level , int levelCap){
         ProgressBar progres = new ProgressBar(this);
         progres = findViewById(R.id.progress_bar);
@@ -517,7 +530,6 @@ public class QuizActivity extends AppCompatActivity {
 
 
     }
-
     public void setDecision(View view) {
         saveLevel();
         loadLevel();
@@ -593,15 +605,6 @@ public class QuizActivity extends AppCompatActivity {
         toDivision.setEnabled(false);
     }
 
-
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        saveLevel();
-        Intent i = new Intent(this,MainActivity.class);
-        startActivity(i);
-    }
-
     public void randomize() {
         result.setText("X");
         displayLevels();
@@ -630,9 +633,6 @@ public class QuizActivity extends AppCompatActivity {
             secondRandom.setText(String.valueOf(mathOperator.getRandomResultTwo()));
         }
     }
-
-
-
     public void answer(View view) {
        // saveLevel();
 
@@ -649,13 +649,15 @@ public class QuizActivity extends AppCompatActivity {
 
                     clickCount++;
                     reachedFive();
-
+                    knowledgeCoin = knowledgeCoin + 1;
+                    updateCoins();
                     colorChangerCorrect(firstRandom);
                 }
                 else {
                     colorChangerIncorrect(firstRandom);
                     guideHolder.setText("Try again");
                     clickCount = 1;
+                    playFailSound();
                 }
                 break;
 
@@ -665,6 +667,9 @@ public class QuizActivity extends AppCompatActivity {
 
                     guideHolder.setText(correctAnswer());
                     playSpecificFile();
+
+                    knowledgeCoin = knowledgeCoin + 1;
+                    updateCoins();
 
                     clickCount++;
                     reachedFive();
@@ -676,6 +681,7 @@ public class QuizActivity extends AppCompatActivity {
                     colorChangerIncorrect(secondRandom);
                     guideHolder.setText("Hmm, that's wrong");
                     clickCount = 1;
+                    playFailSound();
 
                 }
                 break;
@@ -687,6 +693,9 @@ public class QuizActivity extends AppCompatActivity {
                     guideHolder.setText(correctAnswer());
                     playSpecificFile();
 
+                    knowledgeCoin = knowledgeCoin + 1;
+                    updateCoins();
+
                     clickCount++;
                     reachedFive();
 
@@ -696,6 +705,7 @@ public class QuizActivity extends AppCompatActivity {
                     colorChangerIncorrect(thirdRandom);
                     guideHolder.setText("Go again");
                     clickCount = 1;
+                    playFailSound();
 
                 }
                 break;
@@ -704,53 +714,115 @@ public class QuizActivity extends AppCompatActivity {
 
     }
 
+    void playLoopSound(){
+        if (sound == 1  && deviceSound == 1){
+            try {
+                player8.reset();
+                player8.setDataSource(getApplicationContext(),
+                        Uri.parse("android.resource://com.app.dizdarious.quickmath/" + R.raw.loop));
+                player8.prepare();
+                player8.setLooping(true);
+                player8.start();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+    }
+    void playFailSound(){
+        if (sound == 1 && deviceSound == 1) {
+            try {
+                player7.reset();
+                player7.setDataSource(getApplicationContext(),
+                        Uri.parse("android.resource://com.app.dizdarious.quickmath/" + R.raw.fail));
+                player7.prepare();
+                player7.start();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+    }
+    public void playSpecificFile(){
+
+
+        if(sound == 1 && deviceSound ==1) {
+            if (clickCount == 1) {
+                try {
+                    player1.reset();
+                    player1.setDataSource(getApplicationContext(),
+                            Uri.parse("android.resource://com.app.dizdarious.quickmath/" + R.raw.one));
+                    player1.prepare();
+                    player1.start();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (clickCount == 2) {
+                try {
+                    player2.reset();
+                    player2.setDataSource(getApplicationContext(),
+                            Uri.parse("android.resource://com.app.dizdarious.quickmath/" + R.raw.two));
+                    player2.prepare();
+                    player2.start();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (clickCount == 3) {
+                try {
+                    player3.reset();
+                    player3.setDataSource(getApplicationContext(),
+                            Uri.parse("android.resource://com.app.dizdarious.quickmath/" + R.raw.tree));
+                    player3.prepare();
+                    player3.start();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+            if (clickCount == 4) {
+                try {
+                    player4.reset();
+                    player4.setDataSource(getApplicationContext(),
+                            Uri.parse("android.resource://com.app.dizdarious.quickmath/" + R.raw.four));
+                    player4.prepare();
+                    player4.start();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (clickCount == 5) {
+                try {
+                    player5.reset();
+                    player5.setDataSource(getApplicationContext(),
+                            Uri.parse("android.resource://com.app.dizdarious.quickmath/" + R.raw.five));
+                    player5.prepare();
+                    player5.start();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (clickCount == 6) {
+                try {
+                    player6.reset();
+                    player6.setDataSource(getApplicationContext(),
+                            Uri.parse("android.resource://com.app.dizdarious.quickmath/" + R.raw.six));
+                    player6.prepare();
+                    player6.start();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 
     public void reachedFive(){
-        if (clickCount == 9) {
+        if (clickCount == 7) {
             clickCount = 1;
         }
     }
 
-    public void playSpecificFile() {
-    if(sound == 1) {
-        if (clickCount == 1) {
-            player1.start();
-
-        }
-
-        if (clickCount == 2) {
-
-            player2.start();
-        }
-
-        if (clickCount == 3) {
-
-            player3.start();
-
-        }
-
-        if (clickCount == 4) {
-
-            player4.start();
-        }
-
-        if (clickCount == 5) {
-            player5.start();
-        }
-
-        if (clickCount == 6) {
-            player6.start();
-        }
-
-        if (clickCount == 7) {
-            player7.start();
-        }
-
-        if (clickCount == 8) {
-            player8.start();
-            }
-    }
-    }
 
     public String levelUpMessage(int n , String s){
         return "You reached level " + n + " in " +  s  +". \n ";
@@ -761,7 +833,6 @@ public class QuizActivity extends AppCompatActivity {
             player1.setDataSource(getApplicationContext(),
                     Uri.parse("android.resource://com.app.dizdarious.quickmath/" + R.raw.one));
             player1.prepare();
-           //g[ player1.setLooping(true);
 
             player2.setDataSource(getApplicationContext(),
                     Uri.parse("android.resource://com.app.dizdarious.quickmath/" + R.raw.two));
@@ -784,27 +855,39 @@ public class QuizActivity extends AppCompatActivity {
             player6.prepare();
 
             player7.setDataSource(getApplicationContext(),
-                    Uri.parse("android.resource://com.app.dizdarious.quickmath/" + R.raw.seven));
+                    Uri.parse("android.resource://com.app.dizdarious.quickmath/" + R.raw.fail));
             player7.prepare();
 
             player8.setDataSource(getApplicationContext(),
-                    Uri.parse("android.resource://com.app.dizdarious.quickmath/" + R.raw.eight));
+                    Uri.parse("android.resource://com.app.dizdarious.quickmath/" + R.raw.loop));
             player8.prepare();
 
+
             player9.setDataSource(getApplicationContext(),
-                    Uri.parse("android.resource://com.app.dizdarious.quickmath/" + R.raw.level_up));
+                    Uri.parse("android.resource://com.app.dizdarious.quickmath/" + R.raw.level_up2));
             player9.prepare();
 
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
-
-
-
     }
 
+    public void giveHint(View v){
+        if (wisdomCoin > 0) {
+            Random random = new Random();
+            String[] hint = {"Try ", "I think it is ", "Result is ", "My guess is "};
+            int n = random.nextInt(hint.length);
+            String randomHint = hint[n];
+
+
+            Toast.makeText(getApplicationContext(), randomHint + String.valueOf(generalResult), Toast.LENGTH_SHORT).show();
+            wisdomCoin = wisdomCoin - 1;
+            updateCoins();
+        }
+        else {
+            Toast.makeText(getApplicationContext(), "You don't have enough Wisdom coins. ", Toast.LENGTH_LONG).show();
+        }
+    }
     public void colorChangerCorrect(final Button button_id){
         button_id.setBackgroundColor(darkestLime);
         blockMultipleClicks();
@@ -926,13 +1009,24 @@ public class QuizActivity extends AppCompatActivity {
 
         }
     }
-
     public void levelUpNotify(String n){
-
-
         final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
         LayoutInflater inflater = this.getLayoutInflater();
-        player9.start();
+
+        if (sound == 1 && deviceSound ==1) {
+            try {
+                player9.reset();
+                player9.setDataSource(getApplicationContext(),
+                        Uri.parse("android.resource://com.app.dizdarious.quickmath/" + R.raw.level_up2));
+                player9.prepare();
+                player9.start();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+
         final View levelView = inflater.inflate(R.layout.pop_up, null);
         dialogBuilder.setView(levelView);
         final AlertDialog alertDialog = dialogBuilder.create();
@@ -962,10 +1056,6 @@ public class QuizActivity extends AppCompatActivity {
 
         TextView levelUp = levelView.findViewById(R.id.level_up_text);
        // levelUp.setText(n);
-
-
-
-
 
         if (decision.equals("addition")){
             levelUp.setText(n);
@@ -1000,8 +1090,6 @@ public class QuizActivity extends AppCompatActivity {
 
 
     }
-
-
     public void levelUpMethod(int n){
         if (decision.equals("addition")) {
             additionLevel = additionLevel + n;
@@ -1017,7 +1105,6 @@ public class QuizActivity extends AppCompatActivity {
 
         }
     }
-
 
     public void blockMultipleClicks(){
         firstRandom.setEnabled(false);
@@ -1036,9 +1123,6 @@ public class QuizActivity extends AppCompatActivity {
             }
         }.start();
     }
-
-
-
     public String correctAnswer(){
         Random random = new Random();
         String[] correct = {"You found a really \n good way to do it!", "You seem to really \n understand this!", "I can tell you’ve \n been practicing!",
@@ -1064,8 +1148,9 @@ public class QuizActivity extends AppCompatActivity {
         thirdRandom.setBackgroundColor(lightBlue);
         thirdRandom.setTextColor(darkestBlue);
 
-    }
+        coinHolder.setBackgroundColor(darkestBlue);
 
+    }
     public void colorThemePink(){
         equation_holder.setBackgroundColor(darkestPink);
         number_holder.setBackgroundColor(darkestPink);
@@ -1079,8 +1164,9 @@ public class QuizActivity extends AppCompatActivity {
 
         thirdRandom.setBackgroundColor(lightPink);
         thirdRandom.setTextColor(darkestPink);
-    }
 
+        coinHolder.setBackgroundColor(darkestPink);
+    }
     public void colorThemePurple(){
         equation_holder.setBackgroundColor(darkestPurple);
         number_holder.setBackgroundColor(darkestPurple);
@@ -1094,8 +1180,9 @@ public class QuizActivity extends AppCompatActivity {
 
         thirdRandom.setBackgroundColor(lightPurple);
         thirdRandom.setTextColor(darkestPurple);
-    }
 
+        coinHolder.setBackgroundColor(darkestPurple);
+    }
     public void colorThemeYellow(){
         equation_holder.setBackgroundColor(darkestYellow);
         number_holder.setBackgroundColor(darkestYellow);
@@ -1109,9 +1196,41 @@ public class QuizActivity extends AppCompatActivity {
 
         thirdRandom.setBackgroundColor(lightYellow);
         thirdRandom.setTextColor(darkestYellow);
+
+        coinHolder.setBackgroundColor(darkestYellow);
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        saveLevel();
+        Intent i = new Intent(this,MainActivity.class);
+        startActivity(i);
+        player8.pause();
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
 
+        if (sound == 1 && deviceSound == 1) {
+            try {
+                player8.reset();
+                player8.setDataSource(getApplicationContext(),
+                        Uri.parse("android.resource://com.app.dizdarious.quickmath/" + R.raw.loop));
+                player8.setLooping(true);
+                player8.prepare();
+                player8.start();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        player8.stop();
+        player8.release();
+    }
 
 
 

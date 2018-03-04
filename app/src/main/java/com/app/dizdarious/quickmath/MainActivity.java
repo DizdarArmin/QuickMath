@@ -6,17 +6,16 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.graphics.drawable.ColorDrawable;
-import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.net.Uri;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -28,18 +27,15 @@ import com.google.android.gms.ads.reward.RewardItem;
 import com.google.android.gms.ads.reward.RewardedVideoAd;
 import com.google.android.gms.ads.reward.RewardedVideoAdListener;
 
-import java.io.IOException;
-
-import static android.provider.AlarmClock.EXTRA_MESSAGE;
-
-
 
 public class MainActivity extends AppCompatActivity {
     public static final String EXTRA_MESSAGE = "message";
     Intent intent;
     MediaPlayer loopPlayer;
     ToggleButton musicButton;
-    int knowledegCoin;
+
+    int knowledgeCoin;
+    int wisdomCoin;
 
     TextView additionCorrect;
     TextView additionIncorrect;
@@ -52,6 +48,9 @@ public class MainActivity extends AppCompatActivity {
 
     TextView divisionCorrect;
     TextView divisionIncorrect;
+
+    TextView knowledge;
+    TextView wisdom;
 
 
 
@@ -68,6 +67,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
+        knowledge = findViewById(R.id.knowledge_coin);
+        wisdom = findViewById(R.id.wisdom_coin);
+
+
 
         Toast.makeText(this,String.valueOf(getCoin()),Toast.LENGTH_LONG).show();
 
@@ -89,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onRewardedVideoAdOpened() {
-
+            Toast.makeText(getApplicationContext(),"You will be rewarded with 25 Knowledge coins and 5 Wisdom coins",Toast.LENGTH_LONG).show();
             }
 
             @Override
@@ -100,15 +104,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onRewardedVideoAdClosed() {
             loadRewardedVideoAd();
+
+
             }
 
             @Override
             public void onRewarded(RewardItem rewardItem) {
-                SharedPreferences.Editor editor = getSharedPreferences("LEVEL", MODE_PRIVATE).edit();
-                int reward = rewardItem.getAmount();
-                knowledegCoin = knowledegCoin + reward;
-                editor.putInt("knowledge_coin",knowledegCoin);
-                editor.commit();
+              saveCoins(rewardItem.getAmount()+15);
+
+
 
             }
 
@@ -132,27 +136,79 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences prefs = getSharedPreferences("LEVEL", MODE_PRIVATE);
 
 
-        knowledegCoin = prefs.getInt("knowledge_coin",-1);
+        knowledgeCoin = prefs.getInt("knowledge_coin",0);
+        wisdomCoin = prefs.getInt("wisdom_coin",0);
 
-        soundSwitch = 1;
-        soundSwitch = prefs.getInt("sound",-1);
-        setSoundValue(soundSwitch);
+        knowledge.setText(String.valueOf(knowledgeCoin));
+        wisdom.setText(String.valueOf(wisdomCoin));
+
+
+        soundSwitch = prefs.getInt("sound",0);
+       // setSoundValue(soundSwitch);
 
         musicButton = findViewById(R.id.sound_on_off);
 
         if (soundSwitch==1){
+            musicButton.setChecked(true);
             musicButton.setText("Sound");
             musicButton.setBackgroundColor(soundOn);
+            setSoundValue(1);
+
+
         }
-        else if(soundSwitch==0){
+        else {
+            musicButton.setChecked(false);
             musicButton.setText("Sound");
             musicButton.setBackgroundColor(soundOff);
+            setSoundValue(0);
+
         }
 
         loadRewardedVideoAd();
-
+        Toast();
 
     } //END OF ONCREATE
+
+
+    public void saveCoins(int n){
+        SharedPreferences.Editor editor = getSharedPreferences("LEVEL", MODE_PRIVATE).edit();
+        editor.putInt("knowledge_coin", knowledgeCoin + n);
+        editor.putInt("wisdom_coin", wisdomCoin + n/5);
+        editor.commit();
+
+        SharedPreferences prefs = getSharedPreferences("LEVEL", MODE_PRIVATE);
+        knowledgeCoin = prefs.getInt("knowledge_coin",0);
+        wisdomCoin = prefs.getInt("wisdom_coin",0);
+
+        knowledge.setText(String.valueOf(knowledgeCoin));
+        wisdom.setText(String.valueOf(wisdomCoin));
+
+    }
+
+    public void buyWisdom(int price, int quantity){
+        if (knowledgeCoin<price){}
+
+
+        else {
+            knowledgeCoin = knowledgeCoin - price;
+            wisdomCoin = wisdomCoin + quantity;
+
+            SharedPreferences.Editor editor = getSharedPreferences("LEVEL", MODE_PRIVATE).edit();
+            editor.putInt("knowledge_coin", knowledgeCoin);
+            editor.putInt("wisdom_coin", wisdomCoin);
+            editor.commit();
+
+            SharedPreferences prefs = getSharedPreferences("LEVEL", MODE_PRIVATE);
+            knowledgeCoin = prefs.getInt("knowledge_coin",0);
+            wisdomCoin = prefs.getInt("wisdom_coin",0);
+
+            knowledge.setText(String.valueOf(knowledgeCoin));
+            wisdom.setText(String.valueOf(wisdomCoin));
+
+        }
+
+    }
+
 
     private void loadRewardedVideoAd() {
         mRewardedVideoAd.loadAd("ca-app-pub-3940256099942544/5224354917",
@@ -168,14 +224,14 @@ public class MainActivity extends AppCompatActivity {
 
     public void soundOnOff(View v){
         if(musicButton.isChecked()){
-            setSoundValue(0);
-            musicButton.setText("Sound");
-            musicButton.setBackgroundColor(soundOff);
-        }
-        else {
             setSoundValue(1);
             musicButton.setText("Sound");
             musicButton.setBackgroundColor(soundOn);
+        }
+        else {
+            setSoundValue(0);
+            musicButton.setText("Sound");
+            musicButton.setBackgroundColor(soundOff);
         }
 
 
@@ -211,20 +267,6 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
                 break;
 
-            case R.id.subtraction:
-                intent.putExtra(EXTRA_MESSAGE, "subtraction");
-                startActivity(intent);
-                break;
-
-            case R.id.multiplication:
-                intent.putExtra(EXTRA_MESSAGE, "multiplication");
-                startActivity(intent);
-                break;
-
-            case R.id.division:
-                intent.putExtra(EXTRA_MESSAGE, "division");
-                startActivity(intent);
-                break;
 
         }
     }
@@ -232,7 +274,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-        public void reset(View v){
+    public void reset(View v){
             final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
             LayoutInflater inflater = this.getLayoutInflater();
 
@@ -325,13 +367,56 @@ public class MainActivity extends AppCompatActivity {
         alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
         alertDialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
 
+        Button first = storeView.findViewById(R.id.first);
+        Button second = storeView.findViewById(R.id.second);
+        Button third = storeView.findViewById(R.id.third);
+        ImageView exit = storeView.findViewById(R.id.exit);
+        final TextView noCoins = storeView.findViewById(R.id.no_coins);
+
+        exit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                alertDialog.cancel();
+                noCoins.setText("");
+            }
+        });
+
+        first.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                buyWisdom(100,5);
+
+                if (knowledgeCoin < 100){
+                    noCoins.setText("You don't have enough coins");
+                }
+            }
+        });
+
+        second.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                buyWisdom(200, 15);
+                if (knowledgeCoin < 200) {
+                    noCoins.setText("You don't have enough coins");
+                }
+            }
+        });
+
+        third.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                buyWisdom(300, 25);
+                if (knowledgeCoin < 300) {
+                    noCoins.setText("You don't have enough coins");
+                }
+            }
+        });
+
+
+
+
         alertDialog.show();
-
-
-
     }
-
-
     public void save(){
         SharedPreferences.Editor editor = getSharedPreferences("LEVEL", MODE_PRIVATE).edit();
 
@@ -362,6 +447,26 @@ public class MainActivity extends AppCompatActivity {
 
         editor.commit();
     }
+
+
+public void Toast(){
+    LayoutInflater inflater = getLayoutInflater();
+    View layout = inflater.inflate(R.layout.toast,
+            (ViewGroup) findViewById(R.id.toast_layout_root));
+
+    ImageView image = (ImageView) layout.findViewById(R.id.image);
+    //image.setImageResource(R.drawable.android);
+    TextView text = (TextView) layout.findViewById(R.id.text);
+    text.setText("You will be rewarded with 25 Knowledge coins and 1 Wisdom coin!");
+
+    Toast toast = new Toast(getApplicationContext());
+    toast.setGravity(Gravity.CENTER_VERTICAL, 0, 0);
+    toast.setDuration(Toast.LENGTH_LONG);
+    toast.setView(layout);
+    toast.show();
+}
+
+
 
 }
 
